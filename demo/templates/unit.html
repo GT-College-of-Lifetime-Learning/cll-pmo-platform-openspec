@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ unit['Name'] }}{% endblock %}
+{% block content %}
+<h1>{{ unit['Name'] }} — unit view</h1>
+
+{% if action_needed %}
+<h2>Action needed</h2>
+<table>
+  <thead><tr><th>Item</th><th>Title</th><th>Why</th></tr></thead>
+  <tbody>
+  {% for a in action_needed %}
+    <tr>
+      <td><a href="/item/{{ a.item['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">{{ a.item['ItemId'] }}</a></td>
+      <td>{{ a.item['Title'] }}</td>
+      <td>{% for w in a['why'] %}<span class="badge b-stale">{{ w }}</span> {% endfor %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h2>Our items</h2>
+<table>
+  <thead><tr><th>Item</th><th>Title</th><th>Tier</th><th>Stage</th><th>Latest RAG</th><th>Updated</th></tr></thead>
+  <tbody>
+  {% for i in items %}
+    {% set s = statuses.get(i['ItemId']) %}
+    <tr>
+      <td><a href="/item/{{ i['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">{{ i['ItemId'] }}</a></td>
+      <td>{{ i['Title'] }}</td>
+      <td>{{ i['Tier'] }}</td>
+      <td>{{ i['Stage'] }}</td>
+      <td>
+        {% if i['Confidential'] %}<span class="badge b-stale">Confidential</span>{% endif %}
+        {% if s %}<span class="badge b-{{ s['OverallRAG'] | lower }}">{{ s['OverallRAG'] }}</span>
+        {% if s['PeriodEnd'] <= '2026-08-31' %} <span class="badge b-stale">Stale</span>{% endif %}
+        {% else %}<span class="badge b-stale">No update</span>{% endif %}
+      </td>
+      <td class="small">{{ s['PeriodEnd'] if s else '—' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Upcoming milestones</h2>
+<table>
+  <thead><tr><th>Date</th><th>Item</th><th>Milestone</th></tr></thead>
+  <tbody>
+  {% for m in milestones %}
+    <tr><td>{{ m['ForecastDate'] }}</td><td>{{ m['ItemId'] }}</td><td>{{ m['MilestoneTitle'] }}</td></tr>
+  {% else %}<tr><td colspan="3" class="muted">None</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="fresh">Data as of {{ generated }}</div>
+{% endblock %}

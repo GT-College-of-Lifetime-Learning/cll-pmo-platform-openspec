@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}CLL SPM{% endblock %} · CLL Strategic Portfolio Management</title>
+<style>
+  :root { --gt-blue:#2E6FE8; --gold:#B3A369; --ink:#1a1a2e; --paper:#f7f7f5;
+          --green:#2E8B3E; --amber:#B8860B; --red:#B22222; --grey:#888; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; background: var(--paper); color: var(--ink); }
+  a { color: var(--gt-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.site { background: var(--ink); color: #fff; padding: .6rem 1.2rem; display: flex;
+                flex-wrap: wrap; gap: 1rem; align-items: center; }
+  header.site .brand { font-weight: 700; letter-spacing: .5px; }
+  header.site .brand small { color: var(--gold); }
+  nav.crumbs { margin-left: auto; font-size: .85rem; display: flex; gap: .8rem; flex-wrap: wrap; }
+  nav.crumbs a { color: #cfd8ff; }
+  .rolebar { background: #eef1fb; padding: .35rem 1.2rem; font-size: .8rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;}
+  .badge { display: inline-block; padding: .1rem .5rem; border-radius: 10px; font-size: .75rem; font-weight: 600; }
+  .b-green { background: #e4f2e7; color: var(--green); }
+  .b-amber { background: #fbf3dd; color: var(--amber); }
+  .b-red   { background: #fbe4e4; color: var(--red); }
+  .b-stale { background: #eee; color: #555; }
+  .b-pend  { background: #eee; color: #555; font-style: italic; }
+  main { padding: 1rem 1.2rem 3rem; max-width: 1400px; margin: 0 auto; }
+  h1 { font-size: 1.35rem; margin: .4rem 0 .2rem; }
+  h2 { font-size: 1.05rem; margin: 1.2rem 0 .4rem; color: var(--ink); }
+  table { border-collapse: collapse; width: 100%; background: #fff; font-size: .85rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid #e4e4e0; }
+  th { background: #f0f0ec; font-weight: 600; }
+  tr:hover td { background: #fafaf7; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; }
+  .card { background: #fff; border-radius: 8px; padding: .9rem 1rem; border: 1px solid #e4e4e0; }
+  .kpi-tile { background: #fff; border-radius: 8px; padding: .8rem 1rem; border: 1px solid #e4e4e0; }
+  .kpi-tile .num { font-size: 1.6rem; font-weight: 700; }
+  .kpi-tile .lbl { font-size: .75rem; color: #666; text-transform: uppercase; letter-spacing: .4px; }
+  .fresh { color: #777; font-size: .78rem; text-align: right; margin: .8rem 0 0; }
+  .muted { color: #777; } .small { font-size: .8rem; }
+  .flash { padding: .8rem 1rem; background: #fff8e1; border-left: 4px solid var(--amber); border-radius: 4px; margin: .6rem 0; }
+  {% block pagecss %}{% endblock %}
+  @media (max-width: 640px) {
+    .cards { grid-template-columns: 1fr; }
+    main { padding: .7rem; }
+  }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="brand">CLL <small>Strategic Portfolio Management</small></div>
+  <nav class="crumbs">
+    <a href="/?as={{ request.query_params.get('as','executive') }}">Strategy 2035</a>
+    <a href="/overview?as={{ request.query_params.get('as','executive') }}">Dean Overview</a>
+    <a href="/governance?as={{ request.query_params.get('as','executive') }}">Governance</a>
+    {% if role %}
+      {% if role['kind'] == 'Unit' %}
+        <a href="/unit/{{ role['unit'] }}?as=unit:{{ role['unit'] }}">My Unit</a>
+      {% else %}
+        <a href="/unit/DEAN?as=executive">Units</a>
+      {% endif %}
+    {% endif %}
+  </nav>
+</header>
+<div class="rolebar">
+  <span>Viewing as:
+    <strong>{{ role['kind'] }}{% if role['unit'] %} · {{ role['unit'] }}{% endif %}</strong>
+  </span>
+  <span class="small">switch:
+    <a href="/?as=executive">Executive</a> ·
+    <a href="/?as=unit:GTPE">GTPE</a> ·
+    <a href="/?as=unit:GTLI">GTLI</a> ·
+    <a href="/?as=unit:CEISMC">CEISMC</a>
+  </span>
+  <span class="small muted">demo — data refreshes {{ generated }}</span>
+</div>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

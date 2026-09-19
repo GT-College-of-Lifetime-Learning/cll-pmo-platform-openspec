@@ -77,9 +77,152 @@ def stale_flag(su):
         return True
     return su["PeriodEnd"] <= "2026-08-31"
 
-# ---------- views ----------
+# ---------- Strategy 2035 (add-strategy-2035-success-dashboard) ----------
 
+WINDOW_START = date(2026, 1, 1)
+WINDOW_END = date(2035, 12, 31)
+
+def _business_days_between(con, start, end):
+    row = con.execute(
+        "SELECT COUNT(*) FROM BusinessDays WHERE IsBusinessDay=1 AND Date >= ? AND Date <= ?",
+        (start.isoformat(), end.isoformat())).fetchone()
+    return row[0] if row else None
+
+@app.get("/strategy", response_class=HTMLResponse)
 @app.get("/", response_class=HTMLResponse)
+def strategy_2035(request: Request):
+    r = role(request)
+    con = db()
+    as_of = TODAY  # demo as-of date; in production = last successful refresh
+
+    # --- Timeline (design D2; hand-check scenario: 2026-08-16 -> 6.2% / 3,425) ---
+    elapsed_days = (as_of - WINDOW_START).days
+    total_days = (WINDOW_END - WINDOW_START).days + 1  # 3,652
+    days_remaining = (WINDOW_END - as_of).days + 1
+    elapsed_pct = round(100 * elapsed_days / total_days, 1)
+    bd_remaining = _business_days_between(con, as_of, WINDOW_END)
+
+    # --- Goals, cards, pace (D3/D4), data states (D7) ---
+    priorities = con.execute(
+        "SELECT * FROM StrategicPriorities ORDER BY PriorityId").fetchall()
+    goals = []
+    live_count = 0
+    for p in priorities:
+        pid = p["PriorityId"]
+        headline = con.execute(
+            "SELECT * FROM KPIs WHERE KpiPriorityId=? AND DashboardRole='Headline'", (pid,)).fetchone()
+        secondary = con.execute(
+            "SELECT * FROM KPIs WHERE KpiPriorityId=? AND DashboardRole='Secondary'", (pid,)).fetchone()
+
+        g = {
+            "no": pid[-1], "pid": pid, "short_name": p["ShortName"] or p["Title"],
+            "color": p["DisplayColor"] or "#B3A369", "state": "Pending source",
+            "headline_value": None, "headline_target": None, "uom": "", "pct": 0,
+            "pct_f": 0, "pace": "Not yet measurable",
+            "pace_label": "Linear pace (unapproved)", "owner": None,
+            "secondary": None, "recent": [], "aligned_work": None, "index": None,
+            "caps": 0, "ladder": [], "vis": "trend", "as_of": None, "pct_note": None,
+            "pending_why": None,
+        }
+
+        def kpi_state(k):
+            if k is None:
+                return "Pending definition", None
+            row = con.execute(
+                "SELECT Value, PeriodEnd FROM KpiValues WHERE KpiValueId=? ORDER BY PeriodEnd DESC LIMIT 1",
+                (k["KpiId"],)).fetchone()
+            if row is None:
+                return ("Pending source" if k["KpiOwner"] else "Pending definition"), None
+            freq_days = {"Monthly": 31, "Quarterly": 92, "Semiannual": 183, "Annual": 366}.get(k["Frequency"], 92)
+            days_since = (as_of - date.fromisoformat(row["PeriodEnd"])).days
+            st = "Stale" if days_since > 2 * freq_days else "Live"
+            return st, row
+
+        if headline is not None:
+            st, row = kpi_state(headline)
+            g["state"] = st
+            g["owner"] = headline["KpiOwner"]
+            g["uom"] = headline["UnitOfMeasure"] or ""
+            if row is not None:
+                g["headline_value"] = int(row["Value"]) if row["Value"] == int(row["Value"]) else row["Value"]
+                g["headline_target"] = int(headline["Target"]) if headline["Target"] and headline["Target"] == int(headline["Target"]) else headline["Target"]
+                g["as_of"] = row["PeriodEnd"]
+                if headline["Target"]:
+                    g["pct"] = min(round(100 * row["Value"] / headline["Target"], 1), 100)
+                    g["pct_f"] = g["pct"]
+                # pace (D3): expected-today = linear interpolation on basis
+                basis = headline["Basis"] or "Cumulative"
+                start = date.fromisoformat(headline["CountingStart"]) if headline["CountingStart"] else WINDOW_START
+                end = date.fromisoformat(headline["TargetDate"]) if headline["TargetDate"] else WINDOW_END
+                if basis == "PointInTime":
+                    expected = headline["Target"]
+                elif basis == "Index":
+                    expected = None  # first assessment anchors; show Not yet measurable
+                else:
+                    frac = min(max((as_of - start).days / max((end - start).days, 1), 0), 1)
+                    expected = (headline["Baseline"] or 0) + ((headline["Target"] or 0) - (headline["Baseline"] or 0)) * frac
+                if st == "Live" and expected:
+                    ratio = row["Value"] / expected if expected else 1
+                    g["pace"] = ("On pace" if ratio >= 0.95 else
+                                 "Behind" if ratio >= 0.80 else "Well behind")
+                # approved trajectory?
+                appr = con.execute(
+                    "SELECT COUNT(*) FROM KpiTrajectories WHERE KpiId=? AND Approved=1",
+                    (headline["KpiId"],)).fetchone()[0]
+                if appr:
+                    g["pace_label"] = "Approved trajectory"
+                if st == "Live":
+                    live_count += 1
+            elif st == "Pending definition":
+                g["pending_why"] = "definition of the counting rule pending (see open questions)"
+
+        if secondary is not None:
+            st2, row2 = kpi_state(secondary)
+            g["secondary"] = {
+                "name": secondary["KpiName"], "state": st2,
+                "value": row2["Value"] if row2 else None,
+                "target": secondary["Target"],
+            }
+
+        # signature visuals per goal
+        g["vis"] = {"1": "ring", "2": "map", "3": "trend", "4": "gauge", "5": "maturity"}.get(g["no"], "trend")
+        if g["no"] == "5":
+            idx_row = con.execute(
+                "SELECT AVG(Level) AS idx, COUNT(*) AS n FROM Capabilities WHERE InScope=1").fetchone()
+            g["index"] = round(idx_row["idx"], 1) if idx_row["idx"] else None
+            g["caps"] = idx_row["n"]
+            dist = con.execute(
+                "SELECT Level, COUNT(*) AS n FROM Capabilities WHERE InScope=1 GROUP BY Level").fetchall()
+            by_lvl = {d["Level"]: d["n"] for d in dist}
+            top = max(by_lvl.values()) if by_lvl else 1
+            g["ladder"] = [
+                {"label": f"L{lvl}", "on": by_lvl.get(lvl, 0) == top} for lvl in (1, 2, 3, 4, 5)
+            ] if by_lvl else []
+
+        recent = con.execute(
+            "SELECT * FROM StrategyActivity WHERE ActPriorityId=? ORDER BY ActDate DESC LIMIT 3",
+            (pid,)).fetchall()
+        g["recent"] = [{"date": a["ActDate"], "title": a["ActTitle"],
+                        "value": int(a["ActValue"]) if a["ActValue"] and a["ActValue"] == int(a["ActValue"]) else a["ActValue"],
+                        "uom": a["ActUoM"] or ""} for a in recent]
+
+        goals.append(g)
+
+    con.close()
+    return templates.TemplateResponse(request, "strategy.html", {
+        "request": request, "role": r, "goals": goals,
+        "elapsed_pct": elapsed_pct, "remaining_pct": round(100 - elapsed_pct, 1),
+        "days_remaining": days_remaining,
+        "business_days_remaining": bd_remaining if bd_remaining is not None else "—",
+        "elapsed_px": int(1000 * elapsed_pct / 100),
+        "as_of": as_of.isoformat(),
+        "live_count": live_count,
+        "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    })
+
+# ---------- Phase 1 views ----------
+
+@app.get("/overview", response_class=HTMLResponse)
 def dean_overview(request: Request):
     r = role(request)
     con = db()
@@ -162,10 +305,11 @@ def governance(request: Request):
     reqs = con.execute(
         """SELECT r.*, (COALESCE(r.ScoreAlignment,0)*0.25 + COALESCE(r.ScoreValue,0)*0.25 +
                COALESCE(r.ScoreUrgency,0)*0.15 + COALESCE(r.ScoreCapacity,0)*0.15 +
-               COALESCE(r.ScoreEffort,0)*0.10 + COALESCE(r.ScoreRisk,0)*0.10) AS ScoreTotal
+               COALESCE(r.ScoreEffort,0)*0.10 + COALESCE(r.ScoreRisk,0)*0.10) AS ScoreTotal,
+               CAST(JULIANDAY('2026-09-19') - JULIANDAY(r.SubmittedDate) AS INTEGER) AS age_days
            FROM IntakeRequests r
            WHERE r.Status NOT IN ('Approved','Declined')
-           ORDER BY r.Status, r.ScoreTotal DESC""").fetchall()
+           ORDER BY r.Status, ScoreTotal DESC""").fetchall()
     tier2 = con.execute(
         """SELECT r.* FROM IntakeRequests r WHERE r.Status='Approved' AND r.Tier='2'""").fetchall()
     decisions = con.execute(
@@ -267,4 +411,5 @@ def priority_detail(request: Request, pid: str):
         "items": [dict(i) for i in items],
         "statuses": {k: dict(v) for k, v in su.items()},
         "masked": masked,
+        "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
     })

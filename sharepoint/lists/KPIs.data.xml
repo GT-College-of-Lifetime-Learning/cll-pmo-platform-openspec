@@ -7,6 +7,9 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-1.1</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">people</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Headline</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Cumulative</pnp:DataValue>
+    <pnp:DataValue FieldName="CountingStart">2026-01-01</pnp:DataValue>
     <pnp:DataValue FieldName="Target">5000.0</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
@@ -21,6 +24,8 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-1.2</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">levels (UG/MS/PhD)</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Detail</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">PointInTime</pnp:DataValue>
     <pnp:DataValue FieldName="Target">3.0</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2029-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
@@ -34,6 +39,9 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-1.4</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">people</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Secondary</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Cumulative</pnp:DataValue>
+    <pnp:DataValue FieldName="CountingStart">2026-01-01</pnp:DataValue>
     <pnp:DataValue FieldName="Target">50.0</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
@@ -47,6 +55,8 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-2.2</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">hubs</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Headline</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">PointInTime</pnp:DataValue>
     <pnp:DataValue FieldName="Target">200.0</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
@@ -61,6 +71,9 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-2.4</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">start-ups</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Secondary</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Cumulative</pnp:DataValue>
+    <pnp:DataValue FieldName="CountingStart">2026-01-01</pnp:DataValue>
     <pnp:DataValue FieldName="Target">25.0</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
@@ -73,6 +86,9 @@
     <pnp:DataValue FieldName="KpiPriorityId">SP-03</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">learners</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Headline</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Cumulative</pnp:DataValue>
+    <pnp:DataValue FieldName="CountingStart">2026-01-01</pnp:DataValue>
     <pnp:DataValue FieldName="Target">5000000.0</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Quarterly</pnp:DataValue>
@@ -87,6 +103,9 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-3.1</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">learners</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Secondary</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Cumulative</pnp:DataValue>
+    <pnp:DataValue FieldName="CountingStart">2026-01-01</pnp:DataValue>
     <pnp:DataValue FieldName="Target">2000000.0</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Quarterly</pnp:DataValue>
@@ -101,6 +120,8 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-3.2</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">percent</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Detail</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Annual</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
     <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
@@ -114,6 +135,8 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-3.4</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">percent</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Detail</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Annual</pnp:DataValue>
     <pnp:DataValue FieldName="Target">35.0</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
     <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
@@ -127,6 +150,8 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-4.6</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">USD</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Headline</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Annual</pnp:DataValue>
     <pnp:DataValue FieldName="Target">20000000.0</pnp:DataValue>
     <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
@@ -140,10 +165,27 @@
     <pnp:DataValue FieldName="KpiObjectiveId">SO-5.3</pnp:DataValue>
     <pnp:DataValue FieldName="UnitOfMeasure">percent of objectives</pnp:DataValue>
     <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Detail</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">PointInTime</pnp:DataValue>
     <pnp:DataValue FieldName="Target">100.0</pnp:DataValue>
     <pnp:DataValue FieldName="Frequency">Quarterly</pnp:DataValue>
     <pnp:DataValue FieldName="Method">Automated</pnp:DataValue>
     <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
     <pnp:DataValue FieldName="KpiNote">Measured by this system</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-012</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Digital Transformation Maturity Index</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-05</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-5.1</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">index (1-5)</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="DashboardRole">Headline</pnp:DataValue>
+    <pnp:DataValue FieldName="Basis">Index</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Semiannual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Assessed</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiNote">Mean capability maturity per rubric; target level pending Dean (Q5)</pnp:DataValue>
   </pnp:DataRow>
 </pnp:DataRows>

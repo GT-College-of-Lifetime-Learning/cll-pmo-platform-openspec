@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Dean Overview{% endblock %}
+{% block content %}
+<h1>Dean Overview</h1>
+
+{% if decisions %}
+<h2>Decisions needed (top)</h2>
+{% for d in decisions %}
+<div class="flash">
+  <strong><a href="/item/{{ d.item['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">{{ d.item['ItemId'] }}</a>
+  — {{ d.item['Title'] }}</strong><br>
+  <span class="small">Ask: {{ d.status['DecisionAsk'] }}</span><br>
+  <span class="badge b-red">Red</span>
+</div>
+{% endfor %}
+{% endif %}
+
+<h2>Health by strategic priority</h2>
+<table>
+  <thead><tr><th>Priority</th><th>Green</th><th>Amber</th><th>Red</th><th>Stale</th><th>Confidential (masked)</th><th></th></tr></thead>
+  <tbody>
+  {% for p in priorities %}
+    {% set h = health.get(p['PriorityId'], {}) %}
+    <tr>
+      <td><a href="/priority/{{ p['PriorityId'] }}?as={{ request.query_params.get('as','executive') }}">{{ p['PriorityId'] }} — {{ p['ShortName'] or p['Title'][:40] }}</a>
+        {% if p['Provisional'] %}<span class="badge b-pend">Provisional</span>{% endif %}</td>
+      <td>{{ h.get('Green', 0) }}</td>
+      <td>{{ h.get('Amber', 0) }}</td>
+      <td>{{ h.get('Red', 0) }}</td>
+      <td>{{ h.get('Stale', 0) }}</td>
+      <td>+{{ masked.get(p['PriorityId'], 0) }}</td>
+      <td class="small"><a href="/priority/{{ p['PriorityId'] }}?as={{ request.query_params.get('as','executive') }}">detail →</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Executive milestones — next 90 days</h2>
+<table>
+  <thead><tr><th>Date</th><th>Item</th><th>Milestone</th></tr></thead>
+  <tbody>
+  {% for m in milestones %}
+    <tr><td>{{ m['ForecastDate'] }}</td>
+        <td><a href="/item/{{ m['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">{{ m['ItemId'] }}</a></td>
+        <td>{{ m['MilestoneTitle'] }}</td></tr>
+  {% else %}<tr><td colspan="3" class="muted">None</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="cards" style="margin-top:1rem">
+  <div class="kpi-tile"><div class="num">{{ currency_pct }}%</div><div class="lbl">Status currency (active items)</div></div>
+  <div class="kpi-tile"><div class="num">{{ active_count }}</div><div class="lbl">Active items</div></div>
+  <div class="kpi-tile"><div class="num">{{ stale_count }}</div><div class="lbl">Stale items</div></div>
+  <div class="kpi-tile"><div class="num">{{ effort_strategic_pct }}%</div><div class="lbl">Effort: Strategic</div></div>
+  <div class="kpi-tile"><div class="num">{{ effort_operational_pct }}%</div><div class="lbl">Effort: Operational</div></div>
+  <div class="kpi-tile"><div class="num">{{ effort_compliance_pct }}%</div><div class="lbl">Effort: Compliance</div></div>
+</div>
+
+<h2>KPI progress vs target</h2>
+<table>
+  <thead><tr><th>KPI</th><th>Goal</th><th>Latest</th><th>Target</th><th>Progress</th></tr></thead>
+  <tbody>
+  {% for k in kpis %}
+  <tr>
+    <td>{{ k['KpiId'] }} — {{ k['KpiName'][:50] }}</td>
+    <td>{{ k['KpiPriorityId'] }}</td>
+    <td>{{ k['LatestValue'] if k['LatestValue'] is not none else '<span class="badge b-pend">Baseline pending</span>' | safe }}</td>
+    <td>{{ k['Target'] if k['Target'] else '—' }}</td>
+    <td>{% if k['LatestValue'] is not none and k['Target'] %}{{ (100 * k['LatestValue'] / k['Target']) | round(1) }}%{% else %}—{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="fresh">Data as of {{ generated }}</div>
+{% endblock %}

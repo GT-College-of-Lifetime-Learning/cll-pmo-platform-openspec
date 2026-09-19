@@ -25,12 +25,14 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE Units (UnitId TEXT PRIMARY KEY, Name TEXT, Head TEXT, UnitActive INT, PilotWave INT, UnitNote TEXT);
 CREATE TABLE UnitAccess (UserUPN TEXT, AccessUnitId TEXT, Role TEXT,
     PRIMARY KEY (UserUPN, AccessUnitId));
-CREATE TABLE StrategicPriorities (PriorityId TEXT PRIMARY KEY, Title TEXT, Description TEXT,
-    ExecOwner TEXT, EffectiveFrom TEXT, EffectiveTo TEXT, Provisional INT, Source TEXT);
+CREATE TABLE StrategicPriorities (PriorityId TEXT PRIMARY KEY, Title TEXT, ShortName TEXT,
+    DisplayColor TEXT, Description TEXT, ExecOwner TEXT, EffectiveFrom TEXT, EffectiveTo TEXT,
+    Provisional INT, Source TEXT);
 CREATE TABLE StrategicObjectives (ObjectiveId TEXT PRIMARY KEY, ObjPriorityId TEXT,
     ObjTitle TEXT, ObjProvisional INT);
 CREATE TABLE KPIs (KpiId TEXT PRIMARY KEY, KpiName TEXT, KpiDefinition TEXT, KpiPriorityId TEXT,
     KpiObjectiveId TEXT, KpiUnitId TEXT, KpiOwner TEXT, UnitOfMeasure TEXT, Direction TEXT,
+    DashboardRole TEXT, Basis TEXT, CountingStart TEXT,
     Baseline REAL, Target REAL, TargetDate TEXT, Frequency TEXT, KpiSource TEXT, Method TEXT,
     ProvisionalFlag INT, KpiNote TEXT);
 CREATE TABLE KpiValues (KpiValueId TEXT, PeriodEnd TEXT, Value REAL, ValueNote TEXT, SubmittedBy TEXT);
@@ -61,6 +63,15 @@ CREATE TABLE Decisions (DecisionId TEXT PRIMARY KEY, DecisionDate TEXT, Body TEX
 CREATE TABLE Counters (Prefix TEXT, CounterYear INT, Next INT, PRIMARY KEY (Prefix, CounterYear));
 CREATE TABLE ConfidentialCounts (CCPriorityId TEXT, CCLeadUnitId TEXT, CCTier TEXT,
     CCStage TEXT, CCRAG TEXT, CCPeriodEnd TEXT, CCCount INT);
+CREATE TABLE KpiTrajectories (KpiId TEXT, PeriodEnd TEXT, ExpectedValue REAL,
+    Approved INT, ApprovedBy TEXT, ApprovedOn TEXT, TrajNote TEXT);
+CREATE TABLE StrategyActivity (ActivityId TEXT PRIMARY KEY, Type TEXT, ActPriorityId TEXT,
+    ActTitle TEXT, ActDate TEXT, ActValue REAL, ActUoM TEXT, ActSource TEXT, ActSubmittedBy TEXT);
+CREATE TABLE Capabilities (CapabilityId TEXT PRIMARY KEY, CapName TEXT, Area TEXT,
+    OwningUnitId TEXT, Level INT, AssessedOn TEXT, Assessor TEXT, EvidenceUrl TEXT,
+    InScope INT, LinkedItemId TEXT);
+CREATE TABLE BusinessDays (Date TEXT PRIMARY KEY, IsBusinessDay INT, BDOfYear INT,
+    MonthEnd INT, QuarterEnd INT, IsHoliday INT);
 CREATE INDEX idx_wi_stage ON WorkItems(Stage);
 CREATE INDEX idx_wi_unit ON WorkItems(LeadUnitId);
 CREATE INDEX idx_su_item ON StatusUpdates(ItemId, PeriodEnd);
@@ -189,18 +200,24 @@ def main():
 
     # ---- Strategy, objectives, KPIs from real seed ----
     for r in load_csv(SEED / "strategic-priorities.csv"):
-        con.execute("INSERT INTO StrategicPriorities VALUES (?,?,?,?,?,?,?,?)",
-            (r["PriorityId"], r["Title"], "", r["ExecOwner"], r["EffectiveFrom"],
+        con.execute("INSERT INTO StrategicPriorities (PriorityId,ShortName,Title,DisplayColor,"
+            "ExecOwner,EffectiveFrom,EffectiveTo,Provisional,Source) "
+            "VALUES (?,?,?,?,?,?,?,?,?)",
+            (r["PriorityId"], r["ShortName"], r["Title"], r["DisplayColor"],
+             r["ExecOwner"], r["EffectiveFrom"],
              r["EffectiveTo"] or None, 1 if r["Provisional"] == "TRUE" else 0, r["Source"]))
     for r in load_csv(SEED / "strategic-objectives.csv"):
         con.execute("INSERT INTO StrategicObjectives VALUES (?,?,?,?)",
             (r["ObjectiveId"], r["PriorityId"], r["Title"], 1))
     for r in load_csv(SEED / "kpis.csv"):
         con.execute("INSERT INTO KPIs (KpiId,KpiName,KpiPriorityId,KpiObjectiveId,UnitOfMeasure,"
-            "Direction,Baseline,Target,TargetDate,Frequency,Method,ProvisionalFlag,KpiNote) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "Direction,DashboardRole,Basis,CountingStart,Baseline,Target,TargetDate,Frequency,"
+            "Method,ProvisionalFlag,KpiNote) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (r["KpiId"], r["Name"], r["PriorityId"], r["ObjectiveId"] or None, r["UnitOfMeasure"],
-             r["Direction"], float(r["Baseline"]) if r["Baseline"] else None,
+             r["Direction"], r["DashboardRole"] or None, r["Basis"] or None,
+             r["CountingStart"] or None,
+             float(r["Baseline"]) if r["Baseline"] else None,
              float(r["Target"]) if r["Target"] else None, r["TargetDate"] or None,
              r["Frequency"], r["Method"], 1 if r["Provisional"] == "TRUE" else 0, r["Note"]))
 
@@ -360,6 +377,88 @@ def main():
         last_rag = next((r for r in reversed(rags) if r), "Green")
         con.execute("INSERT INTO ConfidentialCounts VALUES (?,?,?,?,?,?,?)",
             (pri, unit, tier, stage, last_rag, PERIOD_ENDS[-1], 1))
+
+    # ---- Strategy 2035 additions (add-strategy-2035-success-dashboard) ----
+
+    # Priorities get ShortName + DisplayColor (schema additions; card labels)
+    short_names = {
+        "SP-01": ("Learning Systems Leaders", "#2A9FB8"),
+        "SP-02": ("Global Learning Hubs", "#F26B21"),
+        "SP-03": ("Learner Reach", "#2E6FE8"),
+        "SP-04": ("Research Leadership", "#2E8B3E"),
+        "SP-05": ("Digital Transformation", "#B3A369"),
+    }
+    for pid, (sn, color) in short_names.items():
+        con.execute("UPDATE StrategicPriorities SET ShortName=?, DisplayColor=? WHERE PriorityId=?",
+                    (sn, color, pid))
+
+    # Trajectories: linear defaults, unapproved (loaded from seed CSV)
+    traj_path = SEED / "kpi-trajectories.csv"
+    for r in load_csv(traj_path):
+        con.execute("INSERT INTO KpiTrajectories VALUES (?,?,?,?,?,?,?)",
+            (r["KpiId"], r["PeriodEnd"], float(r["ExpectedValue"]),
+             1 if r["Approved"] == "TRUE" else 0, r["ApprovedBy"] or None,
+             r["ApprovedOn"] or None, r["Note"]))
+
+    # Demo values so the cards show Live states (marked demo-sourced)
+    kpi_vals["KPI-012"] = [2.6, 2.6, 2.7]  # maturity index, semiannual
+    # KPI-012 values
+    for p, v in zip(["2026-03-31", "2026-06-30", "2026-09-15"], kpi_vals["KPI-012"]):
+        con.execute("INSERT INTO KpiValues VALUES (?,?,?,?,?)",
+            ("KPI-012", p, v, "Demo: first full assessment pending", "Strategic Operations"))
+
+    # StrategyActivity: recent entries per goal (counts/names only, never learners)
+    acts = [
+        ("ACT-001", "TermGraduates", "SP-01", "MS Learning Systems, Summer term", "2026-08-07", 64, "graduates", "GTPE Registrar"),
+        ("ACT-002", "TermGraduates", "SP-01", "Certificate in Learning Systems, Spring", "2026-05-15", 41, "graduates", "GTPE Registrar"),
+        ("ACT-003", "TermGraduates", "SP-01", "Minor cohort completes", "2026-05-15", 12, "graduates", "GTLI"),
+        ("ACT-004", "HubOpening", "SP-02", "Midtown Employer Hub", "2026-08-20", 1, "hubs", "Strategic Operations"),
+        ("ACT-005", "HubOpening", "SP-02", "Savannah Regional Hub", "2026-07-01", 1, "hubs", "GT-Savannah"),
+        ("ACT-006", "HubOpening", "SP-02", "Alpharetta Tech Corridor Hub", "2026-05-30", 1, "hubs", "GTPE"),
+        ("ACT-007", "StartupAdopted", "SP-02", "StudyLoop enters pilot with 3 school districts", "2026-09-02", 1, "start-ups", "Incubator"),
+        ("ACT-008", "CredentialIssued", "SP-03", "Professional Certificates issued (Q3)", "2026-09-10", 12400, "learners", "GTPE"),
+        ("ACT-009", "CredentialIssued", "SP-03", "Language Proficiency credentials (Q3)", "2026-09-10", 8600, "learners", "GTLI"),
+        ("ACT-010", "CredentialIssued", "SP-03", "Dual-enrollment completions (Q2)", "2026-06-30", 4200, "learners", "CEISMC"),
+        ("ACT-011", "GrantAwarded", "SP-04", "NSF: Adaptive learning at scale", "2026-09-05", 480000, "USD", "Research Admin"),
+        ("ACT-012", "GrantAwarded", "SP-04", "Foundation: Learning analytics ethics", "2026-08-22", 250000, "USD", "Research Admin"),
+        ("ACT-013", "GrantAwarded", "SP-04", "Corporate: Lifelong learning platform R&D", "2026-07-18", 900000, "USD", "Research Admin"),
+        ("ACT-014", "CapabilityDelivered", "SP-05", "Intake-to-decision workflow automated", "2026-08-30", 1, "capability", "Strategic Operations"),
+        ("ACT-015", "CapabilityDelivered", "SP-05", "Unit status reporting digitized (this system)", "2026-09-15", 1, "capability", "Strategic Operations"),
+        ("ACT-016", "CapabilityDelivered", "SP-05", "Budget alerting automated", "2026-06-15", 1, "capability", "Central Ops"),
+    ]
+    con.executemany("INSERT INTO StrategyActivity VALUES (?,?,?,?,?,?,?,?,?)",
+        [(aid, t, p, title, d, v, uom, src, src) for
+         (aid, t, p, title, d, v, uom, src) in acts])
+
+    # Capabilities: first partial inventory (levels 1-5, evidence required)
+    caps = [
+        ("CAP-001", "Project intake and triage", "compliance/reporting", "DEAN", 3, "2026-09-01", "Strategic Operations", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-001", 1, None),
+        ("CAP-002", "Status reporting", "data/analytics", "DEAN", 4, "2026-09-15", "Strategic Operations", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-002", 1, None),
+        ("CAP-003", "Course scheduling", "course scheduling", "GTPE", 2, "2026-08-01", "GTPE Ops", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-003", 1, None),
+        ("CAP-004", "Learner support ticketing", "learner support", "GTLI", 2, "2026-08-01", "GTLI Ops", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-004", 1, None),
+        ("CAP-005", "Budget planning and alerts", "financial operations", "DEAN", 3, "2026-06-15", "Central Ops", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-005", 1, None),
+        ("CAP-006", "Credentialing and records", "credentialing", "GTPE", 2, "2026-07-20", "GTPE Registrar", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-006", 1, None),
+        ("CAP-007", "Marketing campaign operations", "communications/marketing", "DEAN", 1, "2026-09-01", "Strategic Operations", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-007", 1, None),
+        ("CAP-008", "Space and facilities requests", "facilities/space", "DEAN", 1, "2026-09-01", "Central Ops", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-008", 1, None),
+        ("CAP-009", "HR onboarding for student staff", "HR/staffing", "CEISMC", 1, "2026-08-15", "CEISMC Ops", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-009", 1, None),
+        ("CAP-010", "Content renewal review", "content development", "GTPE", 2, "2026-06-30", "GTPE Academic", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-010", 1, None),
+    ]
+    con.executemany("INSERT INTO Capabilities VALUES (?,?,?,?,?,?,?,?,?,?)", caps)
+
+    # Business-day calendar from the Phase 1 generated table (task 2.11)
+    cal_path = ROOT / "sharepoint" / "lists" / "business-days.csv"
+    if cal_path.exists():
+        for r in load_csv(cal_path):
+            con.execute("INSERT OR IGNORE INTO BusinessDays VALUES (?,?,?,?,?,?)",
+                (r["Date"], int(r["IsBusinessDay"]), int(r["BDOfYear"] or 0),
+                 int(r["MonthEnd"] or 0), int(r["QuarterEnd"] or 0), int(r["IsHoliday"] or 0)))
+    else:
+        # minimal fallback: weekends only
+        d = dt.date(2026, 9, 1)
+        while d <= dt.date(2027, 12, 31):
+            con.execute("INSERT OR IGNORE INTO BusinessDays VALUES (?,?,?,?,?,?)",
+                (d.isoformat(), 1 if d.weekday() < 5 else 0, 0, 0, 0, 0))
+            d += dt.timedelta(days=1)
 
     con.commit()
     counts = {t: con.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in

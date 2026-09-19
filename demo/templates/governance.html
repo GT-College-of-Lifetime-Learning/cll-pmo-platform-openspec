@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Governance{% endblock %}
+{% block content %}
+<h1>Governance (TCC)</h1>
+
+<h2>Intake pipeline — by stage and age</h2>
+<table>
+  <thead><tr><th>Request</th><th>Title</th><th>Unit</th><th>Units involved</th><th>Tier</th><th>Status</th><th>Score</th><th>Age (days)</th></tr></thead>
+  <tbody>
+  {% for r in requests %}
+    <tr>
+      <td>{{ r['RequestId'] }}</td>
+      <td>{{ r['Title'] }}</td>
+      <td>{{ r['ReqUnitId'] }}</td>
+      <td>{{ r['ContributingUnitIds'] or '—' }}</td>
+      <td>{% if r['Tier'] == '1' %}<strong>T1</strong>{% else %}T2{% endif %}</td>
+      <td>{{ r['Status'] }}</td>
+      <td>{% if r['ScoreTotal'] %}{{ r['ScoreTotal'] | round(1) }}{% else %}<span class="muted">not scored</span>{% endif %}</td>
+      <td class="small">{{ r['age_days'] }}</td>
+    </tr>
+  {% else %}<tr><td colspan="8" class="muted">Pipeline empty</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Tier 2 approvals open for TCC call-up (10 business days)</h2>
+<table>
+  <thead><tr><th>Request</th><th>Title</th><th>Unit</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for t in tier2 %}
+    <tr><td>{{ t['RequestId'] }}</td><td>{{ t['Title'] }}</td><td>{{ t['ReqUnitId'] }}</td><td>Approved — call-up window open</td></tr>
+  {% else %}<tr><td colspan="4" class="muted">None</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Recent decisions</h2>
+<table>
+  <thead><tr><th>ID</th><th>Date</th><th>Body</th><th>Subject</th><th>Decision</th><th>Rationale</th></tr></thead>
+  <tbody>
+  {% for d in decisions %}
+    <tr><td>{{ d['DecisionId'] }}</td><td>{{ d['DecisionDate'] }}</td><td>{{ d['Body'] }}</td>
+        <td>{{ d['SubjectId'] }}</td><td>{{ d['Decision'] }}</td>
+        <td class="small">{{ d['Rationale'][:80] }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="fresh">Data as of {{ generated }}</div>
+{% endblock %}

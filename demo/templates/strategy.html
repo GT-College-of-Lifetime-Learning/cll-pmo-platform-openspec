@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Strategy 2035{% endblock %}
+{% block pagecss %}
+.timeline-strip { display: flex; flex-wrap: wrap; gap: .8rem; margin: .8rem 0 1.2rem; }
+.tile { background: #fff; border: 1px solid #e4e4e0; border-radius: 8px; padding: .7rem .9rem; min-width: 120px; }
+.tile .num { font-size: 1.25rem; font-weight: 700; }
+.tile .lbl { font-size: .7rem; color: #666; text-transform: uppercase; letter-spacing: .4px; }
+.goal-card { display: flex; flex-direction: column; gap: .5rem; }
+.goal-card .band { height: 6px; border-radius: 3px; }
+.goal-card h3 { margin: 0; font-size: .95rem; }
+.goal-card .goal-no { color: #777; font-weight: 700; }
+.bar-wrap { background: #eee; border-radius: 6px; height: 12px; position: relative; }
+.bar-fill { height: 12px; border-radius: 6px; }
+.pace-marker { position: absolute; top: -4px; width: 2px; height: 20px; background: var(--ink); }
+.recent-list { font-size: .8rem; margin: 0; padding-left: 1.1rem; }
+.recent-list li { margin: .15rem 0; }
+.vis { font-size: .8rem; }
+.ring { display: inline-block; vertical-align: middle; }
+.maturity-ladder { display: flex; gap: 4px; margin-top: .2rem; }
+.maturity-ladder span { flex: 1; text-align: center; font-size: .68rem; padding: .15rem 0; border-radius: 3px; background: #eee; color: #555; }
+.maturity-ladder span.on { background: var(--gold); color: #fff; font-weight: 700; }
+{% endblock %}
+{% block content %}
+<h1>Strategy 2035 Success Metrics</h1>
+<p class="muted small">Window: Jan 1, 2026 – Dec 31, 2035 · All priorities labeled Provisional until confirmed by the Dean's office.</p>
+
+<div class="timeline-strip">
+  <div class="tile"><div class="num">{{ elapsed_pct }}%</div><div class="lbl">Time elapsed</div></div>
+  <div class="tile"><div class="num">{{ remaining_pct }}%</div><div class="lbl">Time remaining</div></div>
+  <div class="tile"><div class="num">{{ days_remaining }}</div><div class="lbl">Calendar days remaining</div></div>
+  <div class="tile"><div class="num">{{ business_days_remaining }}</div><div class="lbl">Business days remaining</div></div>
+  <div class="tile"><div class="num">2035</div><div class="lbl">Target year</div></div>
+  <div class="tile"><div class="num">{{ as_of }}</div><div class="lbl">Data as of</div></div>
+</div>
+
+<div class="tile" style="margin-bottom:1.2rem">
+  <div class="lbl" style="font-size:.75rem;color:#666">STRATEGY WINDOW · marker = expected progress by today</div>
+  <svg width="100%" height="28" viewBox="0 0 1000 28" preserveAspectRatio="none" role="img"
+       aria-label="Strategy window bar: {{ elapsed_pct }} percent elapsed, marker at {{ elapsed_pct }} percent">
+    <rect x="0" y="8" width="1000" height="12" fill="#e4e4e0" rx="6"></rect>
+    <rect x="0" y="8" width="{{ elapsed_px }}" height="12" fill="#B3A369" rx="6"></rect>
+    <rect x="{{ elapsed_px }}" y="2" width="3" height="24" fill="#1a1a2e"></rect>
+  </svg>
+  <div class="small muted">2026 {{ elapsed_pct }}% elapsed → 2035</div>
+</div>
+
+<div class="cards">
+{% for g in goals %}
+<div class="card goal-card">
+  <div class="band" style="background: {{ g.color }}"></div>
+  <h3><span class="goal-no">Goal {{ g.no }} ·</span> {{ g.short_name }}</h3>
+
+  {% if g.state == 'Pending definition' %}
+    <div><span class="badge b-pend">Definition pending</span>
+      <span class="small muted">{{ g.pending_why }}</span></div>
+  {% elif g.state == 'Pending source' %}
+    <div><span class="badge b-pend">Data source pending</span>
+      <span class="small muted">Owner: {{ g.owner or 'owner to be named (task 0.4)' }}</span></div>
+  {% else %}
+    <div>
+      <span class="num" style="font-size:1.4rem;font-weight:700">{{ g.headline_value }}</span>
+      <span class="small muted">of {{ g.headline_target }} {{ g.uom }}</span>
+      {% if g.state == 'Stale' %}<span class="badge b-stale">Stale — as of {{ g.as_of }}</span>{% endif %}
+    </div>
+    <div class="bar-wrap" role="img" aria-label="{{ g.short_name }}: {{ g.pct }} percent of target">
+      <div class="bar-fill" style="width: {{ g.pct }}%; background: {{ g.color }}"></div>
+      <div class="pace-marker" style="left: {{ g.pct }}%" title="actual"></div>
+    </div>
+    <div class="small">
+      Pace: <strong>{{ g.pace }}</strong>
+      <span class="muted">({{ g.pace_label }})</span>
+      {% if g.pct_note %}<span class="muted">· {{ g.pct_note }}% of target</span>{% endif %}
+    </div>
+  {% endif %}
+
+  {% if g.secondary %}
+    <div class="small">Secondary: {{ g.secondary.name }} —
+      {% if g.secondary.state == 'Live' or g.secondary.state == 'Stale' %}
+        <strong>{{ g.secondary.value }}</strong> of {{ g.secondary.target }}
+      {% else %}<span class="muted">{{ g.secondary.state }}</span>{% endif %}
+    </div>
+  {% endif %}
+
+  <div class="vis">
+    {% if g.vis == 'ring' %}
+      <svg class="ring" width="54" height="54" viewBox="0 0 54 54" role="img"
+           aria-label="Progress ring: {{ g.pct }} percent">
+        <circle cx="27" cy="27" r="22" fill="none" stroke="#eee" stroke-width="7"></circle>
+        <circle cx="27" cy="27" r="22" fill="none" stroke="{{ g.color }}" stroke-width="7"
+                stroke-dasharray="{{ g.pct_f }} 100" pathLength="100"
+                transform="rotate(-90 27 27)"></circle>
+        <text x="27" y="31" text-anchor="middle" font-size="13" font-weight="700">{{ g.pct }}%</text>
+      </svg>
+      <span class="muted">graduates by most recent term (trend on priority page)</span>
+    {% elif g.vis == 'map' %}
+      <span class="muted">Hub map (Azure Maps in Power BI) —
+        <a href="/priority/{{ g.pid }}?as={{ request.query_params.get('as','executive') }}">hub list</a></span>
+    {% elif g.vis == 'trend' %}
+      <span class="muted">credential trend by quarter on priority page</span>
+    {% elif g.vis == 'gauge' %}
+      <span class="muted">FY trend vs $20M on priority page</span>
+    {% elif g.vis == 'maturity' %}
+      <div class="maturity-ladder" role="img" aria-label="Maturity level distribution">
+        {% for lvl in g.ladder %}<span class="{% if lvl.on %}on{% endif %}">{{ lvl.label }}</span>{% endfor %}
+      </div>
+      <span class="small muted">Index {{ g.index }} / 5.0 ({{ g.caps }} in-scope capabilities)</span>
+    {% endif %}
+  </div>
+
+  <div>
+    <span class="lbl" style="font-size:.7rem;color:#666;text-transform:uppercase">Recent</span>
+    <ul class="recent-list">
+      {% for a in g.recent %}
+        <li>{{ a.date }} — {{ a.title }}{% if a.value %} <strong>({{ a.value }} {{ a.uom }})</strong>{% endif %}</li>
+      {% else %}
+        <li class="muted">No activity recorded</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  {% if g.aligned_work %}
+    <div class="small">Active work: <a href="/priority/{{ g.pid }}?as={{ request.query_params.get('as','executive') }}">{{ g.aligned_work }} projects</a></div>
+  {% endif %}
+
+  <div><a class="small" href="/priority/{{ g.pid }}?as={{ request.query_params.get('as','executive') }}">Drill through to objectives, KPIs, and aligned work →</a></div>
+</div>
+{% endfor %}
+</div>
+
+<div class="fresh">Headline KPIs live: {{ live_count }} / 5 · data as of {{ generated }}</div>
+<p class="small muted">Goal 5 uses a qualitative maturity index per the published rubric. No placeholder values are shown in production;
+each metric is Live, Stale, Pending source, or Pending definition with its as-of date and source in the tooltip.</p>
+{% endblock %}

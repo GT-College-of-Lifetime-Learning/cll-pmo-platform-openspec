@@ -511,6 +511,137 @@
       }
     },
     {
+      "title": "KpiTrajectories",
+      "description": "Expected KPI values by period with approval state (design D3); linear defaults marked unapproved",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "KpiId", "title": "KPI ID", "type": "Text", "required": true, "maxLength": 8 },
+        { "internalName": "PeriodEnd", "title": "Period End", "type": "DateTime", "required": true, "format": "DateOnly" },
+        { "internalName": "ExpectedValue", "title": "Expected Value", "type": "Number", "required": true, "decimals": 4 },
+        { "internalName": "Approved", "title": "Approved", "type": "Boolean", "required": true },
+        { "internalName": "ApprovedBy", "title": "Approved By", "type": "Text" },
+        { "internalName": "ApprovedOn", "title": "Approved On", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "TrajNote", "title": "Note", "type": "Text" }
+      ],
+      "indexes": [
+        { "fieldInternalName": "KpiId" },
+        { "fieldInternalName": "PeriodEnd" }
+      ],
+      "views": [
+        {
+          "title": "By KPI",
+          "rowLimit": 500,
+          "fields": ["KpiId", "PeriodEnd", "ExpectedValue", "Approved", "ApprovedBy", "ApprovedOn"],
+          "query": "<OrderBy><FieldRef Name='KpiId' /><FieldRef Name='PeriodEnd' /></OrderBy>"
+        }
+      ],
+      "fieldRefs": [
+        {
+          "internalName": "ApprovedBy",
+          "validation": {
+            "formula": "=IF([Approved],AND([ApprovedBy]<>\"\",[ApprovedOn]<>\"\"),TRUE)",
+            "message": "Approved trajectories require approver and date (strategy-kpi-data spec)"
+          }
+        }
+      ],
+      "security": {
+        "breakRoleInheritance": true,
+        "permissions": { "owners": ["Strategic Operations group", "CLL-SPM service account"], "readers": [] }
+      }
+    },
+    {
+      "title": "StrategyActivity",
+      "description": "Recent-activity feed entries per goal (design D5); counts and names only, never learner identities",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "ActivityId", "title": "Activity ID", "type": "Text", "required": true, "maxLength": 16, "unique": true },
+        {
+          "internalName": "Type",
+          "title": "Type",
+          "type": "Choice",
+          "required": true,
+          "choices": ["TermGraduates", "HubOpening", "StartupAdopted", "CredentialIssued", "GrantAwarded", "CapabilityDelivered"]
+        },
+        { "internalName": "ActPriorityId", "title": "Goal Priority ID", "type": "Text", "required": true, "maxLength": 8 },
+        { "internalName": "ActTitle", "title": "Title", "type": "Text", "required": true },
+        { "internalName": "ActDate", "title": "Date", "type": "DateTime", "required": true, "format": "DateOnly" },
+        { "internalName": "ActValue", "title": "Value", "type": "Number", "decimals": 4 },
+        { "internalName": "ActUoM", "title": "Unit of Measure", "type": "Text" },
+        { "internalName": "ActSource", "title": "Source", "type": "Text", "required": true },
+        { "internalName": "ActSubmittedBy", "title": "Submitted By", "type": "Text", "required": true }
+      ],
+      "indexes": [
+        { "fieldInternalName": "ActPriorityId" },
+        { "fieldInternalName": "ActDate" }
+      ],
+      "views": [
+        {
+          "title": "Latest by Goal",
+          "rowLimit": 500,
+          "fields": ["ActivityId", "Type", "ActPriorityId", "ActTitle", "ActDate", "ActValue"],
+          "query": "<OrderBy><FieldRef Name='ActPriorityId' /><FieldRef Name='ActDate' Ascending='FALSE' /></OrderBy>"
+        }
+      ],
+      "security": {
+        "breakRoleInheritance": true,
+        "permissions": { "owners": ["Strategic Operations group", "CLL-SPM service account"], "readers": [] }
+      }
+    },
+    {
+      "title": "Capabilities",
+      "description": "Goal 5 Digital Transformation capability inventory (design D6); index = mean level of in-scope capabilities",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "CapabilityId", "title": "Capability ID", "type": "Text", "required": true, "maxLength": 16, "unique": true },
+        { "internalName": "CapName", "title": "Name", "type": "Text", "required": true },
+        { "internalName": "Area", "title": "Capability Area", "type": "Text", "required": true },
+        { "internalName": "OwningUnitId", "title": "Owning Unit ID", "type": "Text", "maxLength": 16 },
+        {
+          "internalName": "Level",
+          "title": "Current Level",
+          "type": "Choice",
+          "required": true,
+          "choices": ["1", "2", "3", "4", "5"]
+        },
+        { "internalName": "AssessedOn", "title": "Assessed On", "type": "DateTime", "required": true, "format": "DateOnly" },
+        { "internalName": "Assessor", "title": "Assessor", "type": "Text", "required": true },
+        { "internalName": "EvidenceUrl", "title": "Evidence Link", "type": "URL", "required": true, "format": "Hyperlink" },
+        { "internalName": "InScope", "title": "In Scope for Index", "type": "Boolean", "required": true },
+        { "internalName": "LinkedItemId", "title": "Linked Registry Item", "type": "Text", "maxLength": 16 }
+      ],
+      "indexes": [
+        { "fieldInternalName": "Area" },
+        { "fieldInternalName": "InScope" }
+      ],
+      "views": [
+        {
+          "title": "Index Heatmap",
+          "rowLimit": 500,
+          "fields": ["CapabilityId", "CapName", "Area", "Level", "AssessedOn", "Assessor", "InScope"],
+          "query": "<OrderBy><FieldRef Name='Area' /><FieldRef Name='CapName' /></OrderBy>"
+        }
+      ],
+      "fieldRefs": [
+        {
+          "internalName": "EvidenceUrl",
+          "validation": {
+            "formula": "=[EvidenceUrl]<>\"\"",
+            "message": "A maturity rating is not saved without an evidence link (strategy-kpi-data spec)"
+          }
+        }
+      ],
+      "security": {
+        "breakRoleInheritance": true,
+        "permissions": { "owners": ["Strategic Operations group", "CLL-SPM service account"], "readers": [] }
+      }
+    },
+    {
       "title": "ConfidentialCounts",
       "description": "Masked aggregation snapshot for Confidential items (design D13) — counts only, no titles or identifiers",
       "hidden": false,

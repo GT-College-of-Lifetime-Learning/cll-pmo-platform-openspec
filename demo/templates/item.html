@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ item['ItemId'] }}{% endblock %}
+{% block content %}
+<h1>{{ item['ItemId'] }} — {{ item['Title'] }}
+  {% if item['Confidential'] %}<span class="badge b-stale">Confidential</span>{% endif %}
+  {% if item['Backfilled'] %}<span class="badge b-pend">Backfilled</span>{% endif %}
+</h1>
+<p class="small muted">
+  {{ item['Level'] }} · Tier {{ item['Tier'] }} · {{ unit_name }} ·
+  Stage: <strong>{{ item['Stage'] }}</strong>
+  {% if item['PrimaryPriorityId'] %} · Aligned: <a href="/priority/{{ item['PrimaryPriorityId'] }}?as={{ request.query_params.get('as','executive') }}">{{ item['PrimaryPriorityId'] }} / {{ item['PrimaryObjectiveId'] or '' }}</a> ({{ item['AlignmentCategory'] }}){% else %} · {{ item['AlignmentCategory'] }}{% endif %}
+  · Sponsor: {{ item['Sponsor'] }} · Lead: {{ item['Lead'] }}
+  · {{ item['StartDate'] }} → {{ item['TargetEndDate'] }}
+</p>
+
+<h2>Status history (append-only)</h2>
+<table>
+  <thead><tr><th>Period</th><th>Overall</th><th>Schedule</th><th>%</th><th>Summary</th><th>Path to green / ask</th><th>Submitted</th></tr></thead>
+  <tbody>
+  {% for h in history %}
+    <tr>
+      <td>{{ h['PeriodEnd'] }}</td>
+      <td><span class="badge b-{{ h['OverallRAG'] | lower }}">{{ h['OverallRAG'] }}</span>
+          {% if h['DecisionNeeded'] %}<span class="badge b-red">Decision needed</span>{% endif %}</td>
+      <td>{{ h['ScheduleRAG'] }}</td>
+      <td>{{ h['PercentComplete'] }}%</td>
+      <td class="small">{{ h['Summary'][:90] }}</td>
+      <td class="small">{{ h['PathToGreen'] or h['DecisionAsk'] or '—' }}</td>
+      <td class="small">{{ h['SubmittedOn'] }}</td>
+    </tr>
+  {% else %}<tr><td colspan="7" class="muted">No updates yet</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Milestones</h2>
+<table>
+  <thead><tr><th>Milestone</th><th>Baseline</th><th>Forecast</th><th>Actual</th></tr></thead>
+  <tbody>
+  {% for m in milestones %}
+    <tr><td>{{ m['MilestoneTitle'] }}</td><td>{{ m['BaselineDate'] }}</td><td>{{ m['ForecastDate'] }}</td><td>{{ m['ActualDate'] or '—' }}</td></tr>
+  {% else %}<tr><td colspan="4" class="muted">None</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Decisions</h2>
+<table>
+  <thead><tr><th>ID</th><th>Date</th><th>Decision</th><th>Rationale</th></tr></thead>
+  <tbody>
+  {% for d in decisions %}
+    <tr><td>{{ d['DecisionId'] }}</td><td>{{ d['DecisionDate'] }}</td><td>{{ d['Decision'] }}</td><td class="small">{{ d['Rationale'] }}</td></tr>
+  {% else %}<tr><td colspan="4" class="muted">None recorded</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if item['WorkspaceUrl'] %}
+<p><a href="{{ item['WorkspaceUrl'] }}">Project workspace →</a></p>
+{% endif %}
+{% endblock %}

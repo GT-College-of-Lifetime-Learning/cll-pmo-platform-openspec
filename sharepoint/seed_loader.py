@@ -128,6 +128,20 @@ MAPPINGS = {
         "required": ["ItemId", "Level", "Title", "Tier", "LeadUnitId", "Stage"],
         "note": "Backfill import path — full import automation is task 2.10; this row (CLL-26-0001) is the standing template.",
     },
+    "KpiTrajectories": {
+        "file": "kpi-trajectories.csv",
+        "columns": {
+            "KpiId": "KpiId",
+            "PeriodEnd": "PeriodEnd",
+            "ExpectedValue": "ExpectedValue",
+            "Approved": "Approved",
+            "ApprovedBy": "ApprovedBy",
+            "ApprovedOn": "ApprovedOn",
+            "Note": "TrajNote",
+        },
+        "required": ["KpiId", "PeriodEnd", "ExpectedValue"],
+        "note": "Linear defaults, all unapproved (design D3) - replace with approved milestones.",
+    },
 }
 
 TRUTHY = {"TRUE", "T", "YES", "Y", "1"}
@@ -310,7 +324,7 @@ def export(out_dir_name: str) -> int:
     if check(strict_provisional=False) != 0:
         print("Refusing to export: seed data failed validation.", file=sys.stderr)
         return 1
-    for list_name in ("Units", "StrategicPriorities", "StrategicObjectives", "KPIs", "WorkItems"):
+    for list_name in ("Units", "StrategicPriorities", "StrategicObjectives", "KPIs", "WorkItems", "KpiTrajectories"):
         p = emit_pnp_data(list_name, MAPPINGS[list_name], schema, out_dir)
         print(f"OK  {p}")
     print(f"\nPnP data XML emitted to {out_dir}")

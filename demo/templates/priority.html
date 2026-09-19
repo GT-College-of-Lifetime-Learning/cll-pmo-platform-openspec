@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ priority['PriorityId'] }}{% endblock %}
+{% block content %}
+<h1>{{ priority['PriorityId'] }} — {{ priority['ShortName'] or priority['Title'] }}
+  {% if priority['Provisional'] %}<span class="badge b-pend">Provisional</span>{% endif %}
+</h1>
+<p class="muted small">{{ priority['Title'] }}</p>
+
+<h2>KPIs</h2>
+<table>
+  <thead><tr><th>KPI</th><th>Name</th><th>Role</th><th>Basis</th><th>Target</th><th>Frequency</th></tr></thead>
+  <tbody>
+  {% for k in kpis %}
+    <tr>
+      <td>{{ k['KpiId'] }}</td>
+      <td>{{ k['KpiName'] }}</td>
+      <td>{{ k['DashboardRole'] or '—' }}</td>
+      <td>{{ k['Basis'] or '—' }}</td>
+      <td>{{ k['Target'] or 'Baseline pending' }}</td>
+      <td>{{ k['Frequency'] }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if masked %}
+<p class="small">+{{ masked }} Confidential item(s) aligned to this goal — counted, details masked.</p>
+{% endif %}
+
+<h2>Aligned work items</h2>
+<table>
+  <thead><tr><th>Item</th><th>Title</th><th>Tier</th><th>Stage</th><th>Lead unit</th><th>Effort (hrs)</th></tr></thead>
+  <tbody>
+  {% for i in items %}
+    {% set s = statuses.get(i['ItemId']) %}
+    <tr>
+      <td><a href="/item/{{ i['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">{{ i['ItemId'] }}</a></td>
+      <td>{{ i['Title'] }}</td>
+      <td>{{ i['Tier'] }}</td>
+      <td>{{ i['Stage'] }}</td>
+      <td>{{ i['LeadUnitId'] }}</td>
+      <td>{{ i['EffortEstimateHrs'] or '—' }}</td>
+    </tr>
+  {% else %}<tr><td colspan="6" class="muted">No aligned items</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="fresh">Data as of {{ generated }}</div>
+{% endblock %}

@@ -111,6 +111,21 @@ model CLL_SPM = {
                 TOPN(1, StatusUpdates, StatusUpdates[PeriodEnd], DESC)
             );
 
+        /// Task 2.6: aligned-work counts per goal, respecting RLS, behind the
+        /// ShowAlignedWork flag (off until Q8 is answered).
+        measure 'Aligned Active Projects' =
+            IF([Show Aligned Work On],
+                CALCULATE(
+                    COUNTROWS(WorkItems),
+                    WorkItems[Stage] IN { "Active", "On Hold" }
+                ));
+
+        measure 'Aligned Contributing Units' =
+            IF([Show Aligned Work On],
+                CALCULATE(DISTINCTCOUNT(WorkItems[LeadUnitId])));
+
+        measure 'Show Aligned Work On' = FALSE();
+
         hierarchies: [];
 
         isPrivate: false;
@@ -253,6 +268,88 @@ model CLL_SPM = {
         column Target { lineageTag: 'k-tgt'; dataType: double; }
         column TargetDate { lineageTag: 'k-td'; dataType: dateTime; }
         column ProvisionalFlag { lineageTag: 'k-prov'; dataType: boolean; }
+        column DashboardRole { lineageTag: 'k-role'; dataType: string; }
+        column Basis { lineageTag: 'k-basis'; dataType: string; }
+        column CountingStart { lineageTag: 'k-cstart'; dataType: dateTime; }
+
+        /// Task 2.3: card roles are data (design D4) - selection driven by DashboardRole.
+        measure 'Headline KPI Value' =
+            CALCULATE(
+                [KPI Latest Value],
+                KPIs[DashboardRole] = "Headline"
+            );
+        measure 'Headline KPI Target' =
+            CALCULATE(
+                SELECTEDVALUE(KPIs[Target]),
+                KPIs[DashboardRole] = "Headline"
+            );
+        measure 'Secondary KPI Value' =
+            CALCULATE(
+                [KPI Latest Value],
+                KPIs[DashboardRole] = "Secondary"
+            );
+
+        /// Task 2.4: data honesty states (design D7).
+        /// Live: value present within the KPI's frequency window.
+        /// Stale: value older than its frequency window.
+        /// Pending source: owner named, no values ever.
+        /// Pending definition: no owner AND no values.
+        measure 'KPI Data State' =
+            VAR LatestPeriod = CALCULATE(MAX(KpiValues[PeriodEnd]))
+            VAR FreqDays =
+                SWITCH(SELECTEDVALUE(KPIs[Frequency]),
+                    "Monthly", 31, "Quarterly", 92,
+                    "Semiannual", 183, "Annual", 366, 92)
+            VAR HasValue = NOT(ISBLANK(LatestPeriod))
+            VAR HasOwner = NOT(ISBLANK(SELECTEDVALUE(KPIs[KpiOwner])))
+            VAR DaysSince = DATEDIFF(LatestPeriod, TODAY(), DAY)
+            RETURN
+                IF(NOT(HasValue) && NOT(HasOwner), "Pending definition",
+                IF(NOT(HasValue), "Pending source",
+                IF(DaysSince > FreqDays * 2, "Stale", "Live")));
+
+        /// Task 2.2: expected-today and pace (design D3).
+        /// Expected-today = trajectory value interpolated to the as-of date;
+        /// linear default when no approved trajectory exists.
+        measure 'Expected Today' =
+            VAR Basis = SELECTEDVALUE(KPIs[Basis])
+            VAR StartDate =
+                SWITCH(Basis,
+                    "Cumulative", COALESCE(SELECTEDVALUE(KPIs[CountingStart]), DATE(2026,1,1)),
+                    "Index", DATE(2026,1,1),
+                    DATE(2026,1,1))
+            VAR EndDate = COALESCE(SELECTEDVALUE(KPIs[TargetDate]), DATE(2035,12,31))
+            VAR Tgt = SELECTEDVALUE(KPIs[Target])
+            VAR Base = COALESCE(SELECTEDVALUE(KPIs[Baseline]), 0)
+            VAR ElapsedPct = DIVIDE(DATEDIFF(StartDate, TODAY(), DAY), DATEDIFF(StartDate, EndDate, DAY))
+            RETURN
+                IF(
+                    ISBLANK(Tgt),
+                    BLANK(),
+                    IF(Basis = "PointInTime", Tgt,
+                       Base + (Tgt - Base) * MIN(MAX(ElapsedPct, 0), 1))
+                );
+
+        measure 'Pace Status' =
+            VAR Actual = [KPI Latest Value]
+            VAR Expected = [Expected Today]
+            VAR State = [KPI Data State]
+            RETURN
+                IF(
+                    State <> "Live" || ISBLANK(Actual) || ISBLANK(Expected),
+                    "Not yet measurable",
+                    IF(Actual >= 0.95 * Expected, "On pace",
+                    IF(Actual >= 0.80 * Expected, "Behind", "Well behind"))
+                );
+
+        measure 'Pace Label' =
+            VAR HasApproved =
+                CALCULATE(
+                    COUNTROWS(KpiTrajectories),
+                    KpiTrajectories[Approved] = TRUE()
+                )
+            RETURN
+                IF(HasApproved > 0, "Approved trajectory", "Linear pace (unapproved)");
 
         measure 'KPI Latest Value' =
             CALCULATE(
@@ -294,6 +391,77 @@ model CLL_SPM = {
         isPrivate: false;
     };
 
+    table KpiTrajectories = {
+        culture: 'en-US';
+        lineageTag: 'kpitraj-77c2';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="KpiTrajectories"]}[Items] in List;
+
+        column KpiId { lineageTag: 'kt-id'; dataType: string; summarizeBy: none; }
+        column PeriodEnd { lineageTag: 'kt-pe'; dataType: dateTime; }
+        column ExpectedValue { lineageTag: 'kt-ev'; dataType: double; }
+        column Approved { lineageTag: 'kt-ap'; dataType: boolean; }
+        column ApprovedBy { lineageTag: 'kt-ab'; dataType: string; }
+        column ApprovedOn { lineageTag: 'kt-ao'; dataType: dateTime; }
+
+        isPrivate: false;
+    };
+
+    table StrategyActivity = {
+        culture: 'en-US';
+        lineageTag: 'stratact-a41f';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="StrategyActivity"]}[Items] in List;
+
+        column ActivityId { lineageTag: 'sa-id'; dataType: string; summarizeBy: none; }
+        column Type { lineageTag: 'sa-t'; dataType: string; }
+        column ActPriorityId { lineageTag: 'sa-p'; dataType: string; summarizeBy: none; }
+        column ActTitle { lineageTag: 'sa-title'; dataType: string; }
+        column ActDate { lineageTag: 'sa-d'; dataType: dateTime; }
+        column ActValue { lineageTag: 'sa-v'; dataType: double; }
+        column ActSource { lineageTag: 'sa-src'; dataType: string; }
+
+        isPrivate: false;
+    };
+
+    table Capabilities = {
+        culture: 'en-US';
+        lineageTag: 'caps-e9b8';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="Capabilities"]}[Items] in List;
+
+        column CapabilityId { lineageTag: 'cap-id'; dataType: string; summarizeBy: none; }
+        column CapName { lineageTag: 'cap-n'; dataType: string; }
+        column Area { lineageTag: 'cap-a'; dataType: string; }
+        column OwningUnitId { lineageTag: 'cap-u'; dataType: string; summarizeBy: none; }
+        column Level { lineageTag: 'cap-l'; dataType: int64; }
+        column AssessedOn { lineageTag: 'cap-ao'; dataType: dateTime; }
+        column Assessor { lineageTag: 'cap-as'; dataType: string; }
+        column InScope { lineageTag: 'cap-is'; dataType: boolean; }
+        column LinkedItemId { lineageTag: 'cap-li'; dataType: string; summarizeBy: none; }
+
+        /// Task 2.5: maturity index = mean current level of in-scope capabilities (D6).
+        measure 'Maturity Index' =
+            CALCULATE(
+                AVERAGE(Capabilities[Level]),
+                Capabilities[InScope] = TRUE()
+            ) format: '0.0';
+
+        measure 'In-Scope Capability Count' =
+            CALCULATE(
+                COUNTROWS(Capabilities),
+                Capabilities[InScope] = TRUE()
+            );
+
+        measure 'Maturity Heatmap Value' =
+            CALCULATE(
+                COUNTROWS(Capabilities),
+                Capabilities[InScope] = TRUE()
+            );
+
+        isPrivate: false;
+    };
+
     table Units = {
         culture: 'en-US';
         lineageTag: 'units-6f0a';
@@ -324,6 +492,62 @@ model CLL_SPM = {
     ///   Executive: see everything.
     ///   Unit: own unit in full (incl. own-unit Confidential) + non-confidential
     ///         Tier 1 college-wide. ConfidentialCounts is permissive (non-identifying).
+    ///
+    /// ---------------------------------------------------------------
+    /// Strategy 2035 measures (tasks 2.1, 2.6) - timeline + aligned work.
+    /// The strategy window is fixed data (Jan 1 2026 - Dec 31 2035), not
+    /// hard-coded priorities: only the WINDOW is constant, per design D2.
+    /// ---------------------------------------------------------------
+
+    /// Task 2.1: timeline math (design D2).
+    /// Window = Jan 1, 2026 through Dec 31, 2035 = 3,652 days.
+    /// Elapsed = full days before as-of; remaining = as-of through Dec 31, 2035 inclusive.
+    expression StrategyWindowStart = #date(2026, 1, 1) meta [IsParameterQuery=false];
+    expression StrategyWindowEnd = #date(2035, 12, 31) meta [IsParameterQuery=false];
+
+    table StrategyTimeline = {
+        culture: 'en-US';
+        lineageTag: 'strattime-52d7';
+
+        /// Calculated table: one row per day in the 2026-2035 window with a
+        /// business-day flag joined from the BusinessDays list (task 2.11 of
+        /// Phase 1). Kept as a model table so timeline measures are simple.
+        query:
+            let
+                Start = #date(2026, 1, 1),
+                End = #date(2035, 12, 31),
+                Days = List.Dates(Start, Duration.Days(End - Start) + 1, #duration(1, 0, 0, 0)),
+                ToTable = Table.FromList(Days, Splitter.SplitByNothing(), {"Date"}),
+                Typed = Table.TransformColumnTypes(ToTable, {{"Date", type date}}),
+                WithBD = Table.AddColumn(Typed, "IsBusinessDay", each
+                    Date.DayOfWeek([Date]) < 5, type logical)
+            in
+                WithBD;
+
+        column Date { lineageTag: 'st-d'; dataType: dateTime; summarizeBy: none; }
+        column IsBusinessDay { lineageTag: 'st-bd'; dataType: boolean; }
+
+        measure 'Window Total Days' = 3652;
+        measure 'Days Elapsed' = DATEDIFF(DATE(2026,1,1), TODAY(), DAY);
+        measure 'Days Remaining' = DATEDIFF(TODAY(), DATE(2035,12,31), DAY) + 1;
+        measure 'Elapsed %' = DIVIDE([Days Elapsed], [Window Total Days]) format: '0.0%';
+        measure 'Remaining %' = 1 - [Elapsed %] format: '0.0%';
+        /// Business days remaining excludes weekends and Institute holidays
+        /// (holidays joined from the business-day calendar at refresh).
+        measure 'Business Days Remaining' =
+            CALCULATE(
+                COUNTROWS(StrategyTimeline),
+                StrategyTimeline[Date] >= TODAY(),
+                StrategyTimeline[IsBusinessDay] = TRUE()
+            );
+
+        isPrivate: false;
+    };
+
+    /// Task 2.6: active aligned projects and contributing units per goal,
+    /// behind a configuration flag (Q8) - flag default OFF until Dean answers.
+    expression ShowAlignedWork = FALSE() meta [IsParameterQuery=false];
+
     role Executive = {
         modelPermission: read;
 
@@ -375,6 +599,8 @@ model CLL_SPM = {
         WorkItems.LeadUnitId manyToOne Units.UnitId,
         StatusUpdates.ItemId manyToOne WorkItems.ItemId,
         KpiValues.KpiId manyToOne KPIs.KpiId,
-        KPIs.KpiPriorityId manyToOne StrategicPriorities.PriorityId
+        KPIs.KpiPriorityId manyToOne StrategicPriorities.PriorityId,
+        KpiTrajectories.KpiId manyToOne KPIs.KpiId,
+        StrategyActivity.ActPriorityId manyToOne StrategicPriorities.PriorityId
     ];
 }
