@@ -1,0 +1,2 @@
+ItemId,Level,Title,ParentId,PortfolioId,PrimaryPriorityId,PrimaryObjectiveId,AlignmentCategory,AlignmentJustification,Tier,LeadUnitId,ContributingUnitIds,Sponsor,Lead,Stage,StartDate,TargetEndDate,EffortEstimateHrs,CostEstimate,ExecutionTool,ExecutionLink,Confidential,Backfilled
+CLL-26-0001,Project,CLL Strategic Portfolio Management - Phase 1,,,SP-05,SO-5.3,Strategic,,1,DEAN,ALL,Bill,Kevin Wong,Approved,2026-10-01,2026-12-18,,,OpenSpec (git),,FALSE,TRUE

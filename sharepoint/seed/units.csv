@@ -1,0 +1,7 @@
+UnitId,Name,Head,Active,PilotWave,Note
+DEAN,Office of the Dean / central operations,,TRUE,1,Includes Strategic Operations
+GTPE,Georgia Tech Professional Education,,TRUE,1,
+GTLI,Georgia Tech Language Institute,,TRUE,1,Includes Language and Communications initiatives
+CEISMC,CEISMC,,TRUE,2,
+SAV,Georgia Tech-Savannah,,TRUE,2,
+TODO,Complete from the Dean's org chart before loading,,FALSE,,Remove this row

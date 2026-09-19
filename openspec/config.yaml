@@ -1,0 +1,30 @@
+schema: spec-driven
+
+context: |
+  Organization: Georgia Tech College of Lifetime Learning (CLL), ~800 people across
+  multiple units (e.g., GTLI, GTPE). Owner: Strategic Operations. Executive sponsor: Bill.
+  Initiative: CLL Strategic Portfolio Management (SPM), informally "the project to manage
+  all projects" — registry, intake, status reporting, and executive dashboards.
+  Strategic frame: CLL Strategy 2035. Priorities and KPIs are seed DATA, never hard-coded.
+  Audiences: Dean, TCC (college decision body for Tier 1 intake and portfolio decisions),
+  unit leaders, project leads, contributors.
+  Platform: Georgia Tech's Microsoft 365 tenant — SharePoint Online, Teams, Microsoft
+  Forms, Power Automate (standard connectors), Power BI (licensed for all CLL staff). Planner premium is Phase 2 and
+  license-dependent. Georgia Tech OIT controls tenant-level provisioning.
+  Constraints: no student-level records anywhere in the system (FERPA); dashboards meet
+  WCAG 2.1 AA; every buildable artifact is source-controlled (PnP/CLI provisioning scripts,
+  Power Platform solution, Power BI PBIP/TMDL); flows never run under a personal account.
+
+rules:
+  proposal:
+    - Name the executive audience and the decision the change enables.
+    - State licensing impact explicitly (none / Power BI Pro / Planner Plan 1-3-5 / premium connectors).
+    - Mark blocking open questions and who must answer them.
+  specs:
+    - Describe observable behavior; keep Microsoft product names out of requirements unless the product itself is the contract.
+    - Every requirement uses SHALL or MUST and has at least one GIVEN/WHEN/THEN scenario.
+  design:
+    - For each decision, name the Microsoft product or SKU it depends on and the fallback if that feature is retired or unlicensed.
+  tasks:
+    - Separate click-ops configuration from source-controlled work.
+    - Tag tasks that need Georgia Tech OIT action with [OIT] and sponsor decisions with [SPONSOR].

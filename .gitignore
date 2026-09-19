@@ -1,0 +1,40 @@
+# OpenSpec
+openspec/changes/archive/**/proposal.md
+openspec/changes/archive/**/design.md
+openspec/changes/archive/**/tasks.md
+openspec/changes/archive/**/specs/**/*.md
+# OpenSpec: only planning artifacts above are ignored; keep specs/ source of truth
+!openspec/specs/**
+
+# Secrets / connection data (never commit)
+*.env
+.env.*
+**/connectionReferences/**/*-connref.xml
+flows/**/connections/*.json
+flows/**/.cds
+flows/**/*.msapp
+local.settings.json
+
+# Build output
+flows/**/bin/
+flows/**/obj/
+flows/**/*.zip
+flows/**/solutionpackage/
+
+# PnP / CLI for Microsoft 365 logs and temp artifacts
+*.log
+sharepoint/.pnppowershell/
+sharepoint/.m365cli/
+
+# Power BI local cache
+powerbi/*.PBIP/cache/
+powerbi/.pbi/
+powerbi/*.SemanticModel/Backup/
+powerbi/*.Report/Backup/
+
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Node (for .opencode tooling)
+.opencode/node_modules/
