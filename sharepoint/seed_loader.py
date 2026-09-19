@@ -46,7 +46,9 @@ MAPPINGS = {
         "file": "strategic-priorities.csv",
         "columns": {
             "PriorityId": "PriorityId",
+            "ShortName": "ShortName",
             "Title": "Title",
+            "DisplayColor": "DisplayColor",
             "ExecOwner": "ExecOwner",
             "EffectiveFrom": "EffectiveFrom",
             "EffectiveTo": "EffectiveTo",
@@ -76,6 +78,9 @@ MAPPINGS = {
             "ObjectiveId": "KpiObjectiveId",
             "UnitOfMeasure": "UnitOfMeasure",
             "Direction": "Direction",
+            "DashboardRole": "DashboardRole",
+            "Basis": "Basis",
+            "CountingStart": "CountingStart",
             "Baseline": "Baseline",
             "Target": "Target",
             "TargetDate": "TargetDate",
@@ -212,6 +217,19 @@ def check(strict_provisional: bool) -> int:
                 prov = (row.get("Provisional") or "").strip().upper()
                 if prov not in TRUTHY and mapping.get("must_be_provisional"):
                     errors.append(f"{prefix}: seed rows must be Provisional=TRUE")
+
+        # strategy-kpi-data spec: exactly one Headline per goal, at most one Secondary
+        if list_name == "KPIs":
+            by_goal = {}
+            for row in rows:
+                role = (row.get("DashboardRole") or "").strip()
+                if role in ("Headline", "Secondary"):
+                    by_goal.setdefault((row.get("PriorityId"), role), []).append(row.get("KpiId"))
+            for (goal, role), ids in by_goal.items():
+                if role == "Headline" and len(ids) > 1:
+                    errors.append(f"KPIs: goal {goal} has multiple Headline KPIs: {ids}")
+                if role == "Secondary" and len(ids) > 1:
+                    errors.append(f"KPIs: goal {goal} has multiple Secondary KPIs: {ids}")
 
         loaded = len([r for r in rows if not any(
             r.get(k) == v for k, v in mapping.get("skip_rows_where", {}).items())])

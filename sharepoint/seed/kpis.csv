@@ -1,12 +1,13 @@
-KpiId,Name,PriorityId,ObjectiveId,UnitOfMeasure,Direction,Baseline,Target,TargetDate,Frequency,Method,Provisional,Owner,Note
-KPI-001,Learning-systems leaders credentialed or graduated (cumulative),SP-01,SO-1.1,people,Up,,5000,2035-12-31,Annual,Manual,TRUE,,Target is 5000+
-KPI-002,Degree levels with a launched field-defining program,SP-01,SO-1.2,levels (UG/MS/PhD),Up,,3,2029-12-31,Annual,Manual,TRUE,,
-KPI-003,Fortune 500 learning leaders holding a CLL credential,SP-01,SO-1.4,people,Up,,50,2035-12-31,Annual,Manual,TRUE,,
-KPI-004,Connected learning hubs,SP-02,SO-2.2,hubs,Up,,200,2035-12-31,Annual,Manual,TRUE,,Target is at least 200
-KPI-005,Incubated learning-tech start-ups with market adoption,SP-02,SO-2.4,start-ups,Up,,25,2035-12-31,Annual,Manual,TRUE,,
-KPI-006,Learners engaged with GT-designed touchpoints (cumulative),SP-03,,learners,Up,,5000000,2035-12-31,Quarterly,Manual,TRUE,,Goal-level KPI; define 'touchpoint' before display (open question 11)
-KPI-007,Unique learners credentialed globally (cumulative),SP-03,SO-3.1,learners,Up,,2000000,2035-12-31,Quarterly,Manual,TRUE,,Plan states no date; 2035 horizon assumed
-KPI-008,Georgia Tech 3-year graduation rate,SP-03,SO-3.2,percent,Up,,,2035-12-31,Annual,Manual,TRUE,,Target = double the baseline; baseline from Institutional Research
-KPI-009,Annual content renewal rate,SP-03,SO-3.4,percent,Up,,35,,Annual,Manual,TRUE,,Plan states no date
-KPI-010,Annual external research expenditures,SP-04,SO-4.6,USD,Up,,20000000,2035-12-31,Annual,Manual,TRUE,,
-KPI-011,Strategic objectives with a live dashboard KPI,SP-05,SO-5.3,percent of objectives,Up,,100,,Quarterly,Automated,TRUE,,Measured by this system
+KpiId,Name,PriorityId,ObjectiveId,UnitOfMeasure,Direction,DashboardRole,Basis,CountingStart,Baseline,Target,TargetDate,Frequency,Method,Provisional,Owner,Note
+KPI-001,Learning-systems leaders credentialed or graduated (cumulative),SP-01,SO-1.1,people,Up,Headline,Cumulative,2026-01-01,,5000,2035-12-31,Annual,Manual,TRUE,,Target is 5000+
+KPI-002,Degree levels with a launched field-defining program,SP-01,SO-1.2,levels (UG/MS/PhD),Up,Detail,PointInTime,,,3,2029-12-31,Annual,Manual,TRUE,,
+KPI-003,Fortune 500 learning leaders holding a CLL credential,SP-01,SO-1.4,people,Up,Secondary,Cumulative,2026-01-01,,50,2035-12-31,Annual,Manual,TRUE,,
+KPI-004,Connected learning hubs,SP-02,SO-2.2,hubs,Up,Headline,PointInTime,,,200,2035-12-31,Annual,Manual,TRUE,,Target is at least 200
+KPI-005,Incubated learning-tech start-ups with market adoption,SP-02,SO-2.4,start-ups,Up,Secondary,Cumulative,2026-01-01,,25,2035-12-31,Annual,Manual,TRUE,,
+KPI-006,Learners engaged with GT-designed touchpoints (cumulative),SP-03,,learners,Up,Headline,Cumulative,2026-01-01,,5000000,2035-12-31,Quarterly,Manual,TRUE,,Goal-level KPI; define 'touchpoint' before display (open question 11)
+KPI-007,Unique learners credentialed globally (cumulative),SP-03,SO-3.1,learners,Up,Secondary,Cumulative,2026-01-01,,2000000,2035-12-31,Quarterly,Manual,TRUE,,Plan states no date; 2035 horizon assumed
+KPI-008,Georgia Tech 3-year graduation rate,SP-03,SO-3.2,percent,Up,Detail,Annual,,,,2035-12-31,Annual,Manual,TRUE,,Target = double the baseline; baseline from Institutional Research
+KPI-009,Annual content renewal rate,SP-03,SO-3.4,percent,Up,Detail,Annual,,,35,,Annual,Manual,TRUE,,Plan states no date
+KPI-010,Annual external research expenditures,SP-04,SO-4.6,USD,Up,Headline,Annual,,,20000000,2035-12-31,Annual,Manual,TRUE,,
+KPI-011,Strategic objectives with a live dashboard KPI,SP-05,SO-5.3,percent of objectives,Up,Detail,PointInTime,,,100,,Quarterly,Automated,TRUE,,Measured by this system
+KPI-012,Digital Transformation Maturity Index,SP-05,SO-5.1,index (1-5),Up,Headline,Index,,,,2035-12-31,Semiannual,Assessed,TRUE,,Mean capability maturity per rubric; target level pending Dean (Q5)

@@ -74,7 +74,9 @@
       "contentTypesEnabled": false,
       "fields": [
         { "internalName": "PriorityId", "title": "Priority ID", "type": "Text", "required": true, "maxLength": 8, "unique": true },
+        { "internalName": "ShortName", "title": "Short Name", "type": "Text", "maxLength": 64 },
         { "internalName": "Title", "title": "Title", "type": "Text", "required": true },
+        { "internalName": "DisplayColor", "title": "Display Color", "type": "Text", "maxLength": 16 },
         { "internalName": "Description", "title": "Description", "type": "Note" },
         { "internalName": "ExecOwner", "title": "Executive Owner", "type": "Text" },
         { "internalName": "EffectiveFrom", "title": "Effective From", "type": "DateTime", "format": "DateOnly" },
@@ -136,6 +138,9 @@
         { "internalName": "KpiPriorityId", "title": "Priority ID", "type": "Text", "maxLength": 8 },
         { "internalName": "KpiObjectiveId", "title": "Objective ID", "type": "Text", "maxLength": 8 },
         { "internalName": "KpiUnitId", "title": "Unit ID (optional)", "type": "Text", "maxLength": 16 },
+        { "internalName": "DashboardRole", "title": "Dashboard Role", "type": "Choice", "choices": ["Headline", "Secondary", "Detail"] },
+        { "internalName": "Basis", "title": "Basis", "type": "Choice", "choices": ["Cumulative", "Annual", "PointInTime", "Index"] },
+        { "internalName": "CountingStart", "title": "Counting Start", "type": "DateTime", "format": "DateOnly" },
         { "internalName": "KpiOwner", "title": "Owner", "type": "Text" },
         { "internalName": "UnitOfMeasure", "title": "Unit of Measure", "type": "Text" },
         {
@@ -151,7 +156,7 @@
           "internalName": "Frequency",
           "title": "Reporting Frequency",
           "type": "Choice",
-          "choices": ["Monthly", "Quarterly", "Annual"]
+          "choices": ["Monthly", "Quarterly", "Annual", "Semiannual"]
         },
         { "internalName": "KpiSource", "title": "Data Source", "type": "Text" },
         { "internalName": "Method", "title": "Collection Method", "type": "Text" },
