@@ -91,19 +91,63 @@
                 transform="rotate(-90 27 27)"></circle>
         <text x="27" y="31" text-anchor="middle" font-size="13" font-weight="700">{{ g.pct }}%</text>
       </svg>
-      <span class="muted">graduates by most recent term (trend on priority page)</span>
+      {% if g.trend %}
+      <svg width="120" height="44" viewBox="0 0 120 44" role="img"
+           aria-label="Trend by period: {{ g.trend | map(attribute='label') | join(', ') }}">
+        {% for t in g.trend %}
+        <rect x="{{ loop.index0 * 40 + 4 }}" y="{{ 40 - t.h }}" width="12" height="{{ t.h }}" rx="2" fill="{{ g.color }}"></rect>
+        <text x="{{ loop.index0 * 40 + 10 }}" y="43" text-anchor="middle" font-size="6" fill="#777">{{ t.label }}</text>
+        {% endfor %}
+      </svg>
+      {% endif %}
+      <span class="muted small">graduates by most recent term</span>
     {% elif g.vis == 'map' %}
-      <span class="muted">Hub map (Azure Maps in Power BI) —
-        <a href="/priority/{{ g.pid }}?as={{ request.query_params.get('as','executive') }}">hub list</a></span>
+      <span class="muted small">Hub map (Azure Maps in Power BI) — current hubs:</span>
+      {% if g.hub_timeline %}
+      <div class="small">Hub/start-up milestones by year:
+        {% for h in g.hub_timeline %}<span class="badge b-amber">{{ h.yr }}: +{{ h.n }}</span> {% endfor %}
+      </div>
+      {% endif %}
+      <a class="small" href="/priority/{{ g.pid }}?as={{ request.query_params.get('as','executive') }}">Full hub list (table) →</a>
     {% elif g.vis == 'trend' %}
-      <span class="muted">credential trend by quarter on priority page</span>
+      {% if g.trend %}
+      <svg width="120" height="44" viewBox="0 0 120 44" role="img"
+           aria-label="Credential trend: {{ g.trend | length }} periods">
+        {% for t in g.trend %}
+        <rect x="{{ loop.index0 * 40 + 4 }}" y="{{ 40 - t.h }}" width="12" height="{{ t.h }}" rx="2" fill="{{ g.color }}"></rect>
+        <text x="{{ loop.index0 * 40 + 10 }}" y="43" text-anchor="middle" font-size="6" fill="#777">{{ t.label }}</text>
+        {% endfor %}
+      </svg>
+      {% endif %}
+      <span class="muted small">credential trend by quarter</span>
     {% elif g.vis == 'gauge' %}
-      <span class="muted">FY trend vs $20M on priority page</span>
+      {% if g.gauge %}
+      <svg width="120" height="60" viewBox="0 0 120 60" role="img"
+           aria-label="Research expenditures {{ g.gauge.pct }} percent of twenty million target">
+        <path d="M 10 55 A 50 50 0 0 1 110 55" fill="none" stroke="#eee" stroke-width="10" stroke-linecap="round"></path>
+        <path d="M 10 55 A 50 50 0 0 1 110 55" fill="none" stroke="{{ g.color }}" stroke-width="10"
+              stroke-linecap="round" stroke-dasharray="{{ (157 * g.gauge.pct / 100) | round(1) }} 157"></path>
+        <text x="60" y="45" text-anchor="middle" font-size="11" font-weight="700">${{ g.gauge.pct }}%</text>
+      </svg>
+      <span class="muted small">of $20M annual target (latest: ${{ '{:,.0f}'.format(g.gauge.value) }})</span>
+      {% endif %}
     {% elif g.vis == 'maturity' %}
       <div class="maturity-ladder" role="img" aria-label="Maturity level distribution">
         {% for lvl in g.ladder %}<span class="{% if lvl.on %}on{% endif %}">{{ lvl.label }}</span>{% endfor %}
       </div>
       <span class="small muted">Index {{ g.index }} / 5.0 ({{ g.caps }} in-scope capabilities)</span>
+      {% if g.heatmap %}
+      <table class="small" style="margin-top:.3rem">
+        <thead><tr><th>Area</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th></tr></thead>
+        <tbody>
+        {% for row in g.heatmap %}
+          <tr><td>{{ row.area }}</td>
+            {% for c in row.cells %}<td>{% if c %}<strong>{{ c }}</strong>{% else %}<span class="muted">·</span>{% endif %}</td>{% endfor %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
     {% endif %}
   </div>
 

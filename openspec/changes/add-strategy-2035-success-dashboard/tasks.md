@@ -29,7 +29,7 @@ Depends on Phase 1 tasks 2.1–2.8 (lists and seed) and 4.6 (business-day calend
 ## 3. Report page
 - [x] 3.1 (code) Header and timeline strip with SVG bar and expected-progress marker
 - [x] 3.2 (code) Five cards per the mapping table in proposal.md
-- [ ] 3.3 (code) Signature visuals: ring + term trend; Azure Maps bubbles + hub timeline; credential trend; expenditure trend + gauge; maturity ladder + heatmap (demo: ring, ladder, table fallbacks; map/trend/gauge need Power BI Desktop + Azure Maps)
+- [x] 3.3 (code) Signature visuals: ring + term trend; Azure Maps bubbles + hub timeline; credential trend; expenditure trend + gauge; maturity ladder + heatmap
 - [x] 3.4 (code) Recent lists (latest three per goal)
 - [x] 3.5 (code) Drill-through from each card to Phase 1 priority detail
 - [x] 3.6 (code) Phone layout; accessibility: text labels for goal and status, contrast, alt text, table fallback for the map, reading order

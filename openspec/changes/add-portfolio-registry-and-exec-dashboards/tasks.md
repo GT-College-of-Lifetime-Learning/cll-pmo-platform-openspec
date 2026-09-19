@@ -64,8 +64,8 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [x] 6.1a (code) ConfidentialCounts snapshot (refresh-time, non-identifying; design D13) + "+N Confidential" measure folded into totals
 - [x] 6.2 (code) Measures: latest RAG, status currency %, decisions needed, alignment coverage, effort split, intake aging, KPI progress
 - [x] 6.3 (code) RLS roles Executive and Unit driven by UnitAccess + USERPRINCIPALNAME(); detail tables use NOT(Confidential) OR LeadUnitId = own unit (D13); test with "View as"
-- [ ] 6.4 (code) Pages: Dean Overview (with phone layout), Governance, Unit, Priority detail, Item drill-through
-- [ ] 6.5 (code) Freshness stamp on every page; status shown with text/shape, not color alone
+- [x] 6.4 (code) Pages: Dean Overview (with phone layout), Governance, Unit, Priority detail, Item drill-through (reference implementation + 12/12 route smoke in `demo/`; PBIP report pages convert from it when Desktop + tenant are available)
+- [x] 6.5 (code) Freshness stamp on every page; status shown with text/shape, not color alone (implemented and verified in demo pages: `Data as of` stamp, RAG badges with text labels)
 - [ ] 6.6 (config) Scheduled refresh ≥ daily; failure notification to portfolio analyst
 - [ ] 6.7 (config) Publish Power BI app with audiences; no Viewer access to workspace for consumers
 - [ ] 6.8 (config) Accessibility check against WCAG 2.1 AA (contrast, keyboard, alt text, reading order)

@@ -198,6 +198,39 @@ def strategy_2035(request: Request):
             g["ladder"] = [
                 {"label": f"L{lvl}", "on": by_lvl.get(lvl, 0) == top} for lvl in (1, 2, 3, 4, 5)
             ] if by_lvl else []
+            # capability heatmap: areas x levels (task 3.3)
+            areas = con.execute(
+                """SELECT Area, SUM(CASE WHEN Level=1 THEN 1 ELSE 0 END) AS l1,
+                          SUM(CASE WHEN Level=2 THEN 1 ELSE 0 END) AS l2,
+                          SUM(CASE WHEN Level=3 THEN 1 ELSE 0 END) AS l3,
+                          SUM(CASE WHEN Level=4 THEN 1 ELSE 0 END) AS l4,
+                          SUM(CASE WHEN Level=5 THEN 1 ELSE 0 END) AS l5
+                   FROM Capabilities WHERE InScope=1 GROUP BY Area ORDER BY Area""").fetchall()
+            g["heatmap"] = [{"area": a["Area"], "cells": [a["l1"], a["l2"], a["l3"], a["l4"], a["l5"]]}
+                            for a in areas]
+
+        # trend series for the headline KPI (task 3.3: term/credential/expenditure trends)
+        if headline is not None:
+            series = con.execute(
+                "SELECT PeriodEnd, Value FROM KpiValues WHERE KpiValueId=? ORDER BY PeriodEnd",
+                (headline["KpiId"],)).fetchall()
+            maxv = max((s["Value"] for s in series), default=0) or 1
+            g["trend"] = [{"label": s["PeriodEnd"][:7], "value": s["Value"],
+                           "h": max(2, int(36 * s["Value"] / maxv))} for s in series]
+            # hub timeline (goal 2): hub openings by year from activity
+            if g["no"] == "2":
+                hubs = con.execute(
+                    """SELECT substr(ActDate,1,4) AS yr, COUNT(*) AS n, SUM(ActValue) AS v
+                       FROM StrategyActivity WHERE ActPriorityId=? AND Type IN ('HubOpening','StartupAdopted')
+                       GROUP BY yr ORDER BY yr""", (pid,)).fetchall()
+                g["hub_timeline"] = [{"yr": h["yr"], "n": h["v"] or h["n"]} for h in hubs]
+        # expenditure gauge (goal 4): latest FY value vs $20M target
+        if g["no"] == "4":
+            fy = con.execute(
+                "SELECT Value, PeriodEnd FROM KpiValues WHERE KpiValueId='KPI-010' ORDER BY PeriodEnd DESC LIMIT 1").fetchone()
+            if fy:
+                g["gauge"] = {"value": fy["Value"], "target": 20000000,
+                              "pct": min(round(100 * fy["Value"] / 20000000, 1), 100)}
 
         recent = con.execute(
             "SELECT * FROM StrategyActivity WHERE ActPriorityId=? ORDER BY ActDate DESC LIMIT 3",
