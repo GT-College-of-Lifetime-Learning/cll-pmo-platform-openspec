@@ -1,0 +1,552 @@
+{
+  "$schema": "https://raw.githubusercontent.com/pnp/PnP-Provisioning-Schema/master/ProvisioningSchema-2021-03.json",
+  "info": {
+    "title": "CLL-SPM Registry Lists",
+    "description": "Portfolio registry SharePoint lists for CLL Strategic Portfolio Management Phase 1. Source: openspec/changes/add-portfolio-registry-and-exec-dashboards/design.md data model.",
+    "version": "1.0.0"
+  },
+  "parameters": {
+    "siteUrl": {
+      "description": "Optional override; when set, apply-site is skipped",
+      "required": false
+    }
+  },
+  "lists": [
+    {
+      "title": "Units",
+      "description": "Reference: CLL units",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "UnitId", "title": "Unit ID", "type": "Text", "required": true, "maxLength": 16, "unique": true },
+        { "internalName": "Name", "title": "Name", "type": "Text", "required": true },
+        { "internalName": "Head", "title": "Unit Head", "type": "Text" },
+        { "internalName": "UnitActive", "title": "Active", "type": "Boolean", "required": true },
+        { "internalName": "PilotWave", "title": "Pilot Wave", "type": "Number", "decimals": 0 },
+        { "internalName": "UnitNote", "title": "Note", "type": "Text" }
+      ],
+      "keyField": "UnitId",
+      "views": [
+        {
+          "title": "All Units",
+          "rowLimit": 100,
+          "fields": ["UnitId", "Name", "Head", "UnitActive", "PilotWave", "UnitNote"],
+          "query": "<OrderBy><FieldRef Name='UnitId' /></OrderBy>"
+        }
+      ]
+    },
+    {
+      "title": "UnitAccess",
+      "description": "Drives Power BI row-level security (design D7/D13)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "UserUPN", "title": "User UPN", "type": "Text", "required": true, "maxLength": 256 },
+        { "internalName": "AccessUnitId", "title": "Unit ID", "type": "Text", "required": true, "maxLength": 16 },
+        {
+          "internalName": "Role",
+          "title": "Role",
+          "type": "Choice",
+          "required": true,
+          "choices": ["Unit", "Executive"]
+        }
+      ],
+      "views": [
+        {
+          "title": "By User",
+          "rowLimit": 500,
+          "fields": ["UserUPN", "AccessUnitId", "Role"],
+          "query": "<OrderBy><FieldRef Name='UserUPN' /><FieldRef Name='AccessUnitId' /></OrderBy>"
+        }
+      ],
+      "security": {
+        "breakRoleInheritance": true,
+        "permissions": { "owners": ["Strategic Operations group", "CLL-SPM service account"], "readers": [] }
+      }
+    },
+    {
+      "title": "StrategicPriorities",
+      "description": "Strategy 2035 goals (seed data; design D4)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "PriorityId", "title": "Priority ID", "type": "Text", "required": true, "maxLength": 8, "unique": true },
+        { "internalName": "Title", "title": "Title", "type": "Text", "required": true },
+        { "internalName": "Description", "title": "Description", "type": "Note" },
+        { "internalName": "ExecOwner", "title": "Executive Owner", "type": "Text" },
+        { "internalName": "EffectiveFrom", "title": "Effective From", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "EffectiveTo", "title": "Effective To", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "Provisional", "title": "Provisional", "type": "Boolean" },
+        { "internalName": "Source", "title": "Source", "type": "Text" }
+      ],
+      "keyField": "PriorityId",
+      "views": [
+        {
+          "title": "Active Priorities",
+          "rowLimit": 100,
+          "fields": ["PriorityId", "Title", "ExecOwner", "EffectiveFrom", "EffectiveTo", "Provisional", "Source"],
+          "query": "<Where><IsNull><FieldRef Name='EffectiveTo' /></IsNull></Where><OrderBy><FieldRef Name='PriorityId' /></OrderBy>"
+        }
+      ]
+    },
+    {
+      "title": "StrategicObjectives",
+      "description": "Objectives under each Strategy 2035 goal (SO-<goal>.<n>)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "ObjectiveId", "title": "Objective ID", "type": "Text", "required": true, "maxLength": 8, "unique": true },
+        { "internalName": "ObjPriorityId", "title": "Priority ID", "type": "Text", "required": true, "maxLength": 8 },
+        { "internalName": "ObjTitle", "title": "Title", "type": "Text", "required": true },
+        { "internalName": "ObjProvisional", "title": "Provisional", "type": "Boolean" }
+      ],
+      "keyField": "ObjectiveId",
+      "fieldRefs": [
+        {
+          "internalName": "ObjPriorityId",
+          "validation": {
+            "formula": "ObjPriorityId<>\"\"",
+            "message": "Objective must reference a Priority ID"
+          }
+        }
+      ],
+      "views": [
+        {
+          "title": "By Priority",
+          "rowLimit": 200,
+          "fields": ["ObjectiveId", "ObjPriorityId", "ObjTitle", "ObjProvisional"],
+          "query": "<OrderBy><FieldRef Name='ObjPriorityId' /><FieldRef Name='ObjectiveId' /></OrderBy>"
+        }
+      ]
+    },
+    {
+      "title": "KPIs",
+      "description": "KPI definitions (seed data)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "KpiId", "title": "KPI ID", "type": "Text", "required": true, "maxLength": 8, "unique": true },
+        { "internalName": "KpiName", "title": "Name", "type": "Text", "required": true },
+        { "internalName": "KpiDefinition", "title": "Definition", "type": "Note" },
+        { "internalName": "KpiPriorityId", "title": "Priority ID", "type": "Text", "maxLength": 8 },
+        { "internalName": "KpiObjectiveId", "title": "Objective ID", "type": "Text", "maxLength": 8 },
+        { "internalName": "KpiUnitId", "title": "Unit ID (optional)", "type": "Text", "maxLength": 16 },
+        { "internalName": "KpiOwner", "title": "Owner", "type": "Text" },
+        { "internalName": "UnitOfMeasure", "title": "Unit of Measure", "type": "Text" },
+        {
+          "internalName": "Direction",
+          "title": "Desired Direction",
+          "type": "Choice",
+          "choices": ["Up", "Down"]
+        },
+        { "internalName": "Baseline", "title": "Baseline", "type": "Number", "decimals": 2 },
+        { "internalName": "Target", "title": "Target", "type": "Number", "decimals": 2 },
+        { "internalName": "TargetDate", "title": "Target Date", "type": "DateTime", "format": "DateOnly" },
+        {
+          "internalName": "Frequency",
+          "title": "Reporting Frequency",
+          "type": "Choice",
+          "choices": ["Monthly", "Quarterly", "Annual"]
+        },
+        { "internalName": "KpiSource", "title": "Data Source", "type": "Text" },
+        { "internalName": "Method", "title": "Collection Method", "type": "Text" },
+        { "internalName": "ProvisionalFlag", "title": "Provisional", "type": "Boolean" },
+        { "internalName": "KpiNote", "title": "Note", "type": "Text" }
+      ],
+      "keyField": "KpiId",
+      "indexes": [
+        { "fieldInternalName": "KpiId" }
+      ],
+      "views": [
+        {
+          "title": "All KPIs",
+          "rowLimit": 200,
+          "fields": ["KpiId", "KpiName", "KpiPriorityId", "KpiObjectiveId", "KpiOwner", "Target", "TargetDate", "Frequency"],
+          "query": "<OrderBy><FieldRef Name='KpiId' /></OrderBy>"
+        }
+      ]
+    },
+    {
+      "title": "KpiValues",
+      "description": "KPI facts: one row per KPI per period (append via flow F6)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "KpiValueId", "title": "KPI ID", "type": "Text", "required": true, "maxLength": 8 },
+        { "internalName": "PeriodEnd", "title": "Period End", "type": "DateTime", "required": true, "format": "DateOnly" },
+        { "internalName": "Value", "title": "Value", "type": "Number", "required": true, "decimals": 4 },
+        { "internalName": "ValueNote", "title": "Note", "type": "Text" },
+        { "internalName": "SubmittedBy", "title": "Submitted By", "type": "Text" }
+      ],
+      "views": [
+        {
+          "title": "By Period",
+          "rowLimit": 2000,
+          "fields": ["KpiValueId", "PeriodEnd", "Value", "SubmittedBy"],
+          "query": "<OrderBy><FieldRef Name='PeriodEnd' Ascending='FALSE' /><FieldRef Name='KpiValueId' /></OrderBy>"
+        }
+      ]
+    },
+    {
+      "title": "Portfolios",
+      "description": "Grouping layer between priorities and programs/projects",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "PortfolioId", "title": "Portfolio ID", "type": "Text", "required": true, "maxLength": 8, "unique": true },
+        { "internalName": "PortfolioTitle", "title": "Title", "type": "Text", "required": true },
+        { "internalName": "PortPriorityId", "title": "Priority ID", "type": "Text", "maxLength": 8 },
+        { "internalName": "PortfolioOwner", "title": "Owner", "type": "Text" }
+      ],
+      "keyField": "PortfolioId",
+      "views": [
+        {
+          "title": "All Portfolios",
+          "rowLimit": 100,
+          "fields": ["PortfolioId", "PortfolioTitle", "PortPriorityId", "PortfolioOwner"],
+          "query": "<OrderBy><FieldRef Name='PortfolioId' /></OrderBy>"
+        }
+      ]
+    },
+    {
+      "title": "WorkItems",
+      "description": "Programs and projects — the registry core",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "ItemId", "title": "Item ID", "type": "Text", "required": true, "maxLength": 16, "unique": true },
+        {
+          "internalName": "Level",
+          "title": "Level",
+          "type": "Choice",
+          "required": true,
+          "choices": ["Program", "Project"]
+        },
+        { "internalName": "Title", "title": "Title", "type": "Text", "required": true },
+        { "internalName": "ParentId", "title": "Parent Item ID", "type": "Text", "maxLength": 16 },
+        { "internalName": "WorkPortfolioId", "title": "Portfolio ID", "type": "Text", "maxLength": 8 },
+        { "internalName": "PrimaryPriorityId", "title": "Primary Priority ID", "type": "Text", "maxLength": 8 },
+        { "internalName": "PrimaryObjectiveId", "title": "Primary Objective ID", "type": "Text", "maxLength": 8 },
+        { "internalName": "SecondaryPriorityIds", "title": "Secondary Priority IDs", "type": "Text", "maxLength": 255 },
+        {
+          "internalName": "AlignmentCategory",
+          "title": "Alignment Category",
+          "type": "Choice",
+          "choices": ["Strategic", "Operational", "Compliance"]
+        },
+        { "internalName": "AlignmentJustification", "title": "Alignment Justification", "type": "Note" },
+        {
+          "internalName": "Tier",
+          "title": "Tier",
+          "type": "Choice",
+          "choices": ["1", "2"]
+        },
+        { "internalName": "LeadUnitId", "title": "Lead Unit ID", "type": "Text", "maxLength": 16 },
+        { "internalName": "ContributingUnitIds", "title": "Contributing Unit IDs", "type": "Text", "maxLength": 255 },
+        { "internalName": "Sponsor", "title": "Sponsor", "type": "Text" },
+        { "internalName": "Lead", "title": "Lead", "type": "Text" },
+        {
+          "internalName": "Stage",
+          "title": "Stage",
+          "type": "Choice",
+          "required": true,
+          "choices": ["Proposed", "Approved", "Active", "On Hold", "Closing", "Closed", "Cancelled"],
+          "validation": {
+            "formula": "=IF([Stage]=\"Active\",AND([Title]<>\"\",[LeadUnitId]<>\"\",[Lead]<>\"\",[Sponsor]<>\"\",[Tier]<>\"\",[StartDate]<>\"\",[TargetEndDate]<>\"\"),TRUE)",
+            "message": "Active requires: Title, Lead Unit, Lead, Sponsor, Tier, Start Date, Target End Date (registry spec: Required data before activation)"
+          }
+        },
+        { "internalName": "StartDate", "title": "Start Date", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "TargetEndDate", "title": "Target End Date", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "BaselineEndDate", "title": "Baseline End Date", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "StageChangedOn", "title": "Stage Changed On", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "StageChangedBy", "title": "Stage Changed By", "type": "Text" },
+        { "internalName": "EffortEstimateHrs", "title": "Effort Estimate (staff hours)", "type": "Number", "decimals": 0 },
+        { "internalName": "CostEstimate", "title": "Cost Estimate (USD)", "type": "Number", "decimals": 0 },
+        { "internalName": "ExecutionTool", "title": "Execution Tool", "type": "Text" },
+        { "internalName": "ExecutionLink", "title": "Execution Link", "type": "URL", "format": "Hyperlink" },
+        { "internalName": "WorkspaceUrl", "title": "Workspace URL", "type": "URL", "format": "Hyperlink" },
+        { "internalName": "CharterUrl", "title": "Charter URL", "type": "URL", "format": "Hyperlink" },
+        { "internalName": "KpiIds", "title": "KPI IDs", "type": "Text", "maxLength": 255 },
+        { "internalName": "Confidential", "title": "Confidential", "type": "Boolean" },
+        { "internalName": "Backfilled", "title": "Backfilled", "type": "Boolean" },
+        { "internalName": "RequestId", "title": "Request ID", "type": "Text", "maxLength": 16 }
+      ],
+      "keyField": "ItemId",
+      "indexes": [
+        { "fieldInternalName": "ItemId" },
+        { "fieldInternalName": "LeadUnitId" },
+        { "fieldInternalName": "Stage" },
+        { "fieldInternalName": "PrimaryPriorityId" }
+      ],
+      "views": [
+        {
+          "title": "Active Items",
+          "rowLimit": 500,
+          "fields": ["ItemId", "Level", "Title", "Tier", "LeadUnitId", "Stage", "PrimaryPriorityId", "TargetEndDate"],
+          "query": "<Where><Eq><FieldRef Name='Stage' /><Value Type='Choice'>Active</Value></Eq></Where><OrderBy><FieldRef Name='ItemId' /></OrderBy>"
+        },
+        {
+          "title": "Tier 1",
+          "rowLimit": 500,
+          "fields": ["ItemId", "Level", "Title", "Stage", "Sponsor", "Lead", "LeadUnitId", "PrimaryPriorityId"],
+          "query": "<Where><Eq><FieldRef Name='Tier' /><Value Type='Choice'>1</Value></Eq></Where><OrderBy><FieldRef Name='ItemId' /></OrderBy>"
+        }
+      ],
+      "fieldRefs": [
+        {
+          "internalName": "PrimaryObjectiveId",
+          "validation": {
+            "formula": "=IF(AND([PrimaryPriorityId]=\"\",[PrimaryObjectiveId]<>\"\"),FALSE,TRUE)",
+            "message": "Objective requires a primary priority; SO-x.y must belong to the primary priority (alignment spec)"
+          }
+        }
+      ],
+      "security": {
+        "breakRoleInheritance": true,
+        "permissions": { "owners": ["Strategic Operations group", "CLL-SPM service account"], "readers": [] }
+      }
+    },
+    {
+      "title": "StatusUpdates",
+      "description": "Append-only status facts: one row per item per period (design D5)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "ItemId", "title": "Item ID", "type": "Text", "required": true, "maxLength": 16 },
+        { "internalName": "PeriodEnd", "title": "Period End", "type": "DateTime", "required": true, "format": "DateOnly" },
+        {
+          "internalName": "OverallRAG",
+          "title": "Overall Status",
+          "type": "Choice",
+          "required": true,
+          "choices": ["Green", "Amber", "Red"]
+        },
+        { "internalName": "ScheduleRAG", "title": "Schedule Status", "type": "Choice", "choices": ["Green", "Amber", "Red"] },
+        { "internalName": "ScopeRAG", "title": "Scope Status", "type": "Choice", "choices": ["Green", "Amber", "Red"] },
+        { "internalName": "ResourceRAG", "title": "Resource Status", "type": "Choice", "choices": ["Green", "Amber", "Red"] },
+        { "internalName": "Summary", "title": "Progress Summary", "type": "Note" },
+        { "internalName": "PathToGreen", "title": "Path to Green", "type": "Note" },
+        { "internalName": "NextMilestone", "title": "Next Milestone", "type": "Text" },
+        { "internalName": "NextMilestoneDate", "title": "Next Milestone Date", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "PercentComplete", "title": "Percent Complete", "type": "Number", "decimals": 0, "minValue": 0, "maxValue": 100 },
+        { "internalName": "DecisionNeeded", "title": "Decision Needed", "type": "Boolean" },
+        { "internalName": "DecisionAsk", "title": "Decision Ask", "type": "Note" },
+        { "internalName": "SubmittedBy", "title": "Submitted By", "type": "Text" },
+        { "internalName": "SubmittedOn", "title": "Submitted On", "type": "DateTime", "required": true, "format": "DateTime" }
+      ],
+      "views": [
+        {
+          "title": "Latest by Item",
+          "rowLimit": 2000,
+          "fields": ["ItemId", "PeriodEnd", "OverallRAG", "Summary", "DecisionNeeded", "SubmittedOn"],
+          "query": "<OrderBy><FieldRef Name='ItemId' /><FieldRef Name='PeriodEnd' Ascending='FALSE' /></OrderBy>"
+        }
+      ],
+      "indexes": [
+        { "fieldInternalName": "ItemId" },
+        { "fieldInternalName": "PeriodEnd" }
+      ],
+      "fieldRefs": [
+        {
+          "internalName": "PathToGreen",
+          "validation": {
+            "formula": "=IF(AND([OverallRAG]=\"Red\",[PathToGreen]=\"\",[DecisionAsk]=\"\"),FALSE,TRUE)",
+            "message": "Red status requires a path to green or a decision ask (status-reporting spec)"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Milestones",
+      "description": "Executive milestones per item",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "ItemId", "title": "Item ID", "type": "Text", "required": true, "maxLength": 16 },
+        { "internalName": "MilestoneTitle", "title": "Title", "type": "Text", "required": true },
+        { "internalName": "BaselineDate", "title": "Baseline Date", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "ForecastDate", "title": "Forecast Date", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "ActualDate", "title": "Actual Date", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "IsExecutive", "title": "Executive Milestone", "type": "Boolean", "required": true }
+      ],
+      "views": [
+        {
+          "title": "Executive Next 90 Days",
+          "rowLimit": 500,
+          "fields": ["ItemId", "MilestoneTitle", "ForecastDate", "ActualDate"],
+          "query": "<Where><And><Eq><FieldRef Name='IsExecutive' /><Value Type='Boolean'>1</Value></Eq><And><IsNotNull><FieldRef Name='ForecastDate' /></IsNotNull><Geq><FieldRef Name='ForecastDate' /><Value Type='DateTime'><Today OffsetDays='90' /></Value></Geq></And></And></Where><OrderBy><FieldRef Name='ForecastDate' /></OrderBy>"
+        }
+      ]
+    },
+    {
+      "title": "IntakeRequests",
+      "description": "Intake pipeline: request -> triage -> decision (design D14)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "RequestId", "title": "Request ID", "type": "Text", "required": true, "maxLength": 16, "unique": true },
+        { "internalName": "Title", "title": "Title", "type": "Text", "required": true },
+        { "internalName": "Requester", "title": "Requester", "type": "Text", "required": true },
+        { "internalName": "ReqUnitId", "title": "Lead Unit ID", "type": "Text", "required": true, "maxLength": 16 },
+        { "internalName": "ContributingUnitIds", "title": "Contributing Unit IDs", "type": "Text", "maxLength": 255 },
+        { "internalName": "Problem", "title": "Problem / Opportunity", "type": "Note", "required": true },
+        { "internalName": "ProposedPriorityId", "title": "Proposed Priority ID", "type": "Text", "maxLength": 8 },
+        { "internalName": "EffortEst", "title": "Effort Estimate (staff hours)", "type": "Number", "decimals": 0 },
+        { "internalName": "CostEst", "title": "Cost Estimate (USD)", "type": "Number", "decimals": 0 },
+        { "internalName": "ExternalCommitment", "title": "External Partner / Client Commitment", "type": "Boolean" },
+        {
+          "internalName": "Tier",
+          "title": "Tier",
+          "type": "Choice",
+          "choices": ["1", "2"]
+        },
+        { "internalName": "ScoreAlignment", "title": "Score: Strategic Alignment", "type": "Number", "decimals": 0, "minValue": 1, "maxValue": 5 },
+        { "internalName": "ScoreValue", "title": "Score: Expected Value", "type": "Number", "decimals": 0, "minValue": 1, "maxValue": 5 },
+        { "internalName": "ScoreUrgency", "title": "Score: Urgency / Compliance", "type": "Number", "decimals": 0, "minValue": 1, "maxValue": 5 },
+        { "internalName": "ScoreCapacity", "title": "Score: Capacity Available", "type": "Number", "decimals": 0, "minValue": 1, "maxValue": 5 },
+        { "internalName": "ScoreEffort", "title": "Score: Effort (inverse)", "type": "Number", "decimals": 0, "minValue": 1, "maxValue": 5 },
+        { "internalName": "ScoreRisk", "title": "Score: Risk (inverse)", "type": "Number", "decimals": 0, "minValue": 1, "maxValue": 5 },
+        { "internalName": "TriageOwner", "title": "Triage Owner", "type": "Text" },
+        {
+          "internalName": "Status",
+          "title": "Status",
+          "type": "Choice",
+          "required": true,
+          "choices": ["Submitted", "In Triage", "Needs Information", "Ready for Review", "Awaiting Decision", "Approved", "Deferred", "Declined"],
+          "default": "Submitted"
+        },
+        { "internalName": "RevisitDate", "title": "Revisit Date", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "DecisionId", "title": "Decision ID", "type": "Text", "maxLength": 16 },
+        { "internalName": "LinkedItemId", "title": "Created Item ID", "type": "Text", "maxLength": 16 }
+      ],
+      "keyField": "RequestId",
+      "indexes": [
+        { "fieldInternalName": "RequestId" },
+        { "fieldInternalName": "Status" }
+      ],
+      "views": [
+        {
+          "title": "Pipeline",
+          "rowLimit": 500,
+          "fields": ["RequestId", "Title", "ReqUnitId", "ContributingUnitIds", "Tier", "Status", "TriageOwner", "EffortEst"],
+          "query": "<Where><Neq><FieldRef Name='Status' /><Value Type='Choice'>Approved</Value></Neq></Where><And><Neq><FieldRef Name='Status' /><Value Type='Choice'>Declined</Value></Neq></And><OrderBy><FieldRef Name='RequestId' /></OrderBy>"
+        },
+        {
+          "title": "My Requests",
+          "rowLimit": 100,
+          "fields": ["RequestId", "Title", "Status", "TriageOwner", "DecisionId"],
+          "query": "<Where><Eq><FieldRef Name='Requester' /><Value Type='Text'>[Me]</Value></Eq></Where><OrderBy><FieldRef Name='RequestId' Ascending='FALSE' /></OrderBy>"
+        }
+      ]
+    },
+    {
+      "title": "Decisions",
+      "description": "Append-only decision log; corrections reference original (intake spec)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "DecisionId", "title": "Decision ID", "type": "Text", "required": true, "maxLength": 16, "unique": true },
+        { "internalName": "DecisionDate", "title": "Date", "type": "DateTime", "required": true, "format": "DateOnly" },
+        { "internalName": "Body", "title": "Deciding Body", "type": "Text", "required": true },
+        { "internalName": "SubjectId", "title": "Subject ID", "type": "Text", "required": true, "maxLength": 16 },
+        {
+          "internalName": "Decision",
+          "title": "Decision",
+          "type": "Choice",
+          "required": true,
+          "choices": ["Approved", "Approved with Conditions", "Deferred", "Declined", "Correction"]
+        },
+        { "internalName": "Rationale", "title": "Rationale", "type": "Note" },
+        { "internalName": "Conditions", "title": "Conditions", "type": "Note" },
+        { "internalName": "CorrectsDecisionId", "title": "Corrects Decision ID", "type": "Text", "maxLength": 16 },
+        { "internalName": "RecordedBy", "title": "Recorded By", "type": "Text" }
+      ],
+      "keyField": "DecisionId",
+      "security": {
+        "breakRoleInheritance": true,
+        "permissions": { "owners": ["Strategic Operations group", "CLL-SPM service account"], "readers": [] }
+      }
+    },
+    {
+      "title": "Counters",
+      "description": "ID generation: Prefix + Year -> Next; flow sets trigger concurrency = 1 (design D10)",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "Prefix", "title": "Prefix", "type": "Text", "required": true, "maxLength": 8 },
+        { "internalName": "CounterYear", "title": "Year", "type": "Number", "required": true, "decimals": 0, "minValue": 2026, "maxValue": 2099 },
+        { "internalName": "Next", "title": "Next", "type": "Number", "required": true, "decimals": 0, "minValue": 1 }
+      ],
+      "keyField": "Prefix",
+      "views": [
+        {
+          "title": "All Counters",
+          "rowLimit": 100,
+          "fields": ["Prefix", "CounterYear", "Next"],
+          "query": "<OrderBy><FieldRef Name='Prefix' /><FieldRef Name='CounterYear' /></OrderBy>"
+        }
+      ],
+      "security": {
+        "breakRoleInheritance": true,
+        "permissions": { "owners": ["CLL-SPM service account"], "readers": [] }
+      }
+    },
+    {
+      "title": "ConfidentialCounts",
+      "description": "Masked aggregation snapshot for Confidential items (design D13) — counts only, no titles or identifiers",
+      "hidden": false,
+      "template": "100",
+      "contentTypesEnabled": false,
+      "fields": [
+        { "internalName": "CCPriorityId", "title": "Priority ID", "type": "Text", "required": true, "maxLength": 8 },
+        { "internalName": "CCLeadUnitId", "title": "Lead Unit ID", "type": "Text", "maxLength": 16 },
+        {
+          "internalName": "CCTier",
+          "title": "Tier",
+          "type": "Choice",
+          "choices": ["1", "2"]
+        },
+        {
+          "internalName": "CCStage",
+          "title": "Stage",
+          "type": "Choice",
+          "choices": ["Proposed", "Approved", "Active", "On Hold", "Closing", "Closed", "Cancelled"]
+        },
+        {
+          "internalName": "CCRAG",
+          "title": "Overall RAG",
+          "type": "Choice",
+          "choices": ["Green", "Amber", "Red", "Stale"]
+        },
+        { "internalName": "CCPeriodEnd", "title": "Period End", "type": "DateTime", "format": "DateOnly" },
+        { "internalName": "CCCount", "title": "Count", "type": "Number", "required": true, "decimals": 0 }
+      ],
+      "views": [
+        {
+          "title": "Snapshot",
+          "rowLimit": 2000,
+          "fields": ["CCPriorityId", "CCLeadUnitId", "CCTier", "CCStage", "CCRAG", "CCPeriodEnd", "CCCount"],
+          "query": "<OrderBy><FieldRef Name='CCPeriodEnd' Ascending='FALSE' /><FieldRef Name='CCPriorityId' /></OrderBy>"
+        }
+      ],
+      "security": {
+        "breakRoleInheritance": true,
+        "permissions": { "owners": ["CLL-SPM service account"], "readers": [] }
+      }
+    }
+  ]
+}

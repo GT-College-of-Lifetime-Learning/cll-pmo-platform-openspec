@@ -16,29 +16,29 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [ ] 0.11 [SPONSOR] Name an executive owner for each Strategy 2035 goal
 
 ## 1. Repository and build pipeline
-- [ ] 1.1 (code) Create repo with `openspec/`, `sharepoint/`, `flows/`, `powerbi/`, `docs/`
-- [ ] 1.2 (code) Provisioning script skeleton that can deploy lists to a test site and to production
+- [x] 1.1 (code) Create repo with `openspec/`, `sharepoint/`, `flows/`, `powerbi/`, `docs/`
+- [x] 1.2 (code) Provisioning script skeleton that can deploy lists to a test site and to production
 - [ ] 1.3 (config) Create `CLL-SPM` solution in the default environment with environment variables (site URL, list IDs) and connection references
 - [ ] 1.4 (code) Export/unpack routine for the solution (`pac solution export` + `unpack`) committed to `flows/`
 - [ ] 1.5 (code) Create PBIP project in `powerbi/` and confirm TMDL diffs cleanly in git
 
 ## 2. Registry and alignment (portfolio-registry, strategic-alignment)
-- [ ] 2.1 (code) Define list schemas: Units, UnitAccess, StrategicPriorities, StrategicObjectives, KPIs, KpiValues, Portfolios, WorkItems, StatusUpdates, Milestones, IntakeRequests, Decisions, Counters
-- [ ] 2.2 (code) Add column validation for activation-required fields and stage values
-- [ ] 2.3 (code) Add indexes on ItemId, PeriodEnd, LeadUnitId, Stage, Status
+- [x] 2.1 (code) Define list schemas: Units, UnitAccess, StrategicPriorities, StrategicObjectives, KPIs, KpiValues, Portfolios, WorkItems, StatusUpdates, Milestones, IntakeRequests, Decisions, Counters
+- [x] 2.2 (code) Add column validation for activation-required fields and stage values
+- [x] 2.3 (code) Add indexes on ItemId, PeriodEnd, LeadUnitId, Stage, Status
 - [ ] 2.4 (config) ID-generation flow using Counters with trigger concurrency = 1
 - [ ] 2.5 (config) Stage-change logging (date + actor) and closeout-summary check
-- [ ] 2.6 (code) Seed Units and UnitAccess
-- [ ] 2.7 (code) Load `strategic-priorities.csv` (5) and `strategic-objectives.csv` (25) as Provisional; define initial portfolios (PF-##)
-- [ ] 2.8 (code) Load `kpis.csv` (11); assign owners once 0.9 is done; missing baselines display "pending"
+- [x] 2.6 (code) Seed Units and UnitAccess
+- [x] 2.7 (code) Load `strategic-priorities.csv` (5) and `strategic-objectives.csv` (25) as Provisional; define initial portfolios (PF-##)
+- [x] 2.8 (code) Load `kpis.csv` (11); assign owners once 0.9 is done; missing baselines display "pending"
 - [ ] 2.9 (config) Confidential item handling: item-level permissions set by flow; lists restricted to Strategic Operations + service account
 - [ ] 2.10 (code) Backfill import script from a standard spreadsheet template (marks Backfilled)
-- [ ] 2.11 (code) Business-day calendar table for due/stale calculations (needed by intake and status flows)
+- [x] 2.11 (code) Business-day calendar table for due/stale calculations (needed by intake and status flows)
 
 ## 3. Intake and governance (intake-governance)
 - [ ] 3.1 (config) Request form (Microsoft Forms, group-owned) with units-involved multi-select (design D14)
 - [ ] 3.2 (config) F1: create REQ record (stamping ContributingUnitIds; multi-unit → Tier 1), notify requester + triage owner
-- [ ] 3.3 (code) Publish scoring rubric and tier criteria in `docs/`; TCC calibrates rubric weights on its first batch
+- [x] 3.3 (code) Publish scoring rubric and tier criteria in `docs/`; TCC calibrates rubric weights on its first batch
 - [ ] 3.4 (config) F2: route by tier via Approvals; write DEC record; on approval create WorkItem and link both ways; open 10-day TCC call-up window for Tier 2
 - [ ] 3.4a (config) Call-up action: TCC member flags a Tier 2 approval → item blocked from Active, added to next TCC agenda
 - [ ] 3.5 (config) Decisions list append-only (no edit/delete for non-admins; corrections reference original)
@@ -46,7 +46,7 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [ ] 3.7 (config) F7 hygiene: triage > 5 business days; unit-head decision reminder at 5 and Strategic Ops notice at 10; close expired call-up windows
 
 ## 4. Status reporting (status-reporting)
-- [ ] 4.1 (code) Publish RAG definitions and a one-page lead playbook in `docs/`
+- [x] 4.1 (code) Publish RAG definitions and a one-page lead playbook in `docs/`
 - [ ] 4.2 (config) Status update form with pre-filled item ID link
 - [ ] 4.3 (config) F4: validate Red → path/ask required; append StatusUpdates; update milestone forecast
 - [ ] 4.4 (config) F5: pre-due reminder, overdue reminder, unit-head escalation at +5 business days
@@ -54,7 +54,7 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [ ] 4.6 (code) Refresh measures using the business-day calendar (task 2.11) for due/stale calculations
 
 ## 5. Project workspaces (project-workspaces)
-- [ ] 5.1 (code) Charter, risk/issue log, and closeout templates in `docs/templates/`
+- [x] 5.1 (code) Charter, risk/issue log, and closeout templates in `docs/templates/`
 - [ ] 5.2 (config) F3: Teams channel + library folder from template; write WorkspaceUrl back
 - [ ] 5.3 (config) Block Tier 1 activation without CharterUrl
 - [ ] 5.4 [OIT] Confirm retention label to apply on closeout; read-only on Closed
