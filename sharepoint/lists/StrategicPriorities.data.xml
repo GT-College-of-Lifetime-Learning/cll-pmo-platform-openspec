@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pnp:DataRows xmlns:pnp="http://schemas.microsoft.com/pnp/provisioning/2021/03" List="StrategicPriorities">
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="PriorityId">SP-01</pnp:DataValue>
+    <pnp:DataValue FieldName="Title">Catalyze a learning society and build the world's home for transformative learning systems leaders</pnp:DataValue>
+    <pnp:DataValue FieldName="EffectiveFrom">2026-10-01</pnp:DataValue>
+    <pnp:DataValue FieldName="Provisional">true</pnp:DataValue>
+    <pnp:DataValue FieldName="Source">Strategy 2035 brochure (Jan 2026) Goal 1</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="PriorityId">SP-02</pnp:DataValue>
+    <pnp:DataValue FieldName="Title">Empower communities with limitless learning and scale our extension model for global impact</pnp:DataValue>
+    <pnp:DataValue FieldName="EffectiveFrom">2026-10-01</pnp:DataValue>
+    <pnp:DataValue FieldName="Provisional">true</pnp:DataValue>
+    <pnp:DataValue FieldName="Source">Strategy 2035 brochure (Jan 2026) Goal 2</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="PriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="Title">Engage 5 million learners with Georgia Tech-designed lifetime learning touchpoints</pnp:DataValue>
+    <pnp:DataValue FieldName="EffectiveFrom">2026-10-01</pnp:DataValue>
+    <pnp:DataValue FieldName="Provisional">true</pnp:DataValue>
+    <pnp:DataValue FieldName="Source">Strategy 2035 brochure (Jan 2026) Goal 3</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="PriorityId">SP-04</pnp:DataValue>
+    <pnp:DataValue FieldName="Title">Be the global thought leader in optimized learning systems</pnp:DataValue>
+    <pnp:DataValue FieldName="EffectiveFrom">2026-10-01</pnp:DataValue>
+    <pnp:DataValue FieldName="Provisional">true</pnp:DataValue>
+    <pnp:DataValue FieldName="Source">Strategy 2035 brochure (Jan 2026) Goal 4</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="PriorityId">SP-05</pnp:DataValue>
+    <pnp:DataValue FieldName="Title">Revolutionize an operational model that is seamless, data-rich, proactive, and learner-first</pnp:DataValue>
+    <pnp:DataValue FieldName="EffectiveFrom">2026-10-01</pnp:DataValue>
+    <pnp:DataValue FieldName="Provisional">true</pnp:DataValue>
+    <pnp:DataValue FieldName="Source">Strategy 2035 brochure (Jan 2026) Goal 5</pnp:DataValue>
+  </pnp:DataRow>
+</pnp:DataRows>

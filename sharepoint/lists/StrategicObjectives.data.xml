@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pnp:DataRows xmlns:pnp="http://schemas.microsoft.com/pnp/provisioning/2021/03" List="StrategicObjectives">
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-1.1</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-01</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Premier global hub for learning-systems leaders (5000+ credentialed or graduated by 2035)</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-1.2</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-01</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Field-defining degrees at every level by 2029</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-1.3</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-01</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Stackable ecosystem of credentials, minors, and service courses</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-1.4</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-01</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">50 Fortune 500 learning leaders hold a CLL credential by 2035</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-2.1</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-02</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Physical spaces as regional learning hubs</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-2.2</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-02</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Global network of 200+ connected learning hubs by 2035</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-2.3</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-02</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Government and industry learning partnerships</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-2.4</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-02</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Entrepreneurship initiatives; 25 learning-tech start-ups with market adoption by 2035</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-3.1</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Credential 2 million unique learners globally</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-3.2</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Double GT 3-year graduation rate through Dual Enrollment by 2035</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-3.3</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Preferred GT non-credit platform on a proprietary ecosystem by 2030</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-3.4</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">AI-accelerated content development; 35% annual content renewal</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-3.5</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Stackable interdisciplinary pathways with campus partners</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-3.6</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Digital credentialing platform</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-3.7</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Learning-performance metrics standard to replace seat time</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-4.1</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-04</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Preeminent research center for optimized learning systems</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-4.2</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-04</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Scalable personalized learning environments (small language models and emergent tech)</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-4.3</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-04</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Agentic synthetic learners to model learning at scale</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-4.4</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-04</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Research thought leadership shaping policy, standards, and practice</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-4.5</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-04</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">ROI modeling for limitless learning</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-4.6</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-04</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">$20M annual external research expenditures by 2035</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-5.1</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-05</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">AI-driven operating backbone with continuously optimized processes</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-5.2</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-05</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Aspirational workplace</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-5.3</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-05</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Data-informed: interactive dashboards across every strategic objective</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ObjectiveId">SO-5.4</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjPriorityId">SP-05</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjTitle">Systems-learning and innovation culture</pnp:DataValue>
+    <pnp:DataValue FieldName="ObjProvisional">true</pnp:DataValue>
+  </pnp:DataRow>
+</pnp:DataRows>

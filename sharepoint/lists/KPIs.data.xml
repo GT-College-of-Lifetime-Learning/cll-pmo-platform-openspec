@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pnp:DataRows xmlns:pnp="http://schemas.microsoft.com/pnp/provisioning/2021/03" List="KPIs">
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-001</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Learning-systems leaders credentialed or graduated (cumulative)</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-01</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-1.1</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">people</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">5000.0</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiNote">Target is 5000+</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-002</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Degree levels with a launched field-defining program</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-01</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-1.2</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">levels (UG/MS/PhD)</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">3.0</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2029-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-003</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Fortune 500 learning leaders holding a CLL credential</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-01</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-1.4</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">people</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">50.0</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-004</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Connected learning hubs</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-02</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-2.2</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">hubs</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">200.0</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiNote">Target is at least 200</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-005</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Incubated learning-tech start-ups with market adoption</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-02</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-2.4</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">start-ups</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">25.0</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-006</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Learners engaged with GT-designed touchpoints (cumulative)</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">learners</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">5000000.0</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Quarterly</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiNote">Goal-level KPI; define 'touchpoint' before display (open question 11)</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-007</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Unique learners credentialed globally (cumulative)</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-3.1</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">learners</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">2000000.0</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Quarterly</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiNote">Plan states no date; 2035 horizon assumed</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-008</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Georgia Tech 3-year graduation rate</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-3.2</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">percent</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiNote">Target = double the baseline; baseline from Institutional Research</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-009</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Annual content renewal rate</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-03</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-3.4</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">percent</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">35.0</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiNote">Plan states no date</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-010</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Annual external research expenditures</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-04</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-4.6</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">USD</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">20000000.0</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetDate">2035-12-31</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Annual</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Manual</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="KpiId">KPI-011</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiName">Strategic objectives with a live dashboard KPI</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiPriorityId">SP-05</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiObjectiveId">SO-5.3</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitOfMeasure">percent of objectives</pnp:DataValue>
+    <pnp:DataValue FieldName="Direction">Up</pnp:DataValue>
+    <pnp:DataValue FieldName="Target">100.0</pnp:DataValue>
+    <pnp:DataValue FieldName="Frequency">Quarterly</pnp:DataValue>
+    <pnp:DataValue FieldName="Method">Automated</pnp:DataValue>
+    <pnp:DataValue FieldName="ProvisionalFlag">true</pnp:DataValue>
+    <pnp:DataValue FieldName="KpiNote">Measured by this system</pnp:DataValue>
+  </pnp:DataRow>
+</pnp:DataRows>

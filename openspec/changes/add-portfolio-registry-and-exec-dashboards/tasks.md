@@ -19,7 +19,7 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [x] 1.1 (code) Create repo with `openspec/`, `sharepoint/`, `flows/`, `powerbi/`, `docs/`
 - [x] 1.2 (code) Provisioning script skeleton that can deploy lists to a test site and to production
 - [ ] 1.3 (config) Create `CLL-SPM` solution in the default environment with environment variables (site URL, list IDs) and connection references
-- [ ] 1.4 (code) Export/unpack routine for the solution (`pac solution export` + `unpack`) committed to `flows/`
+- [x] 1.4 (code) Export/unpack routine for the solution (`pac solution export` + `unpack`) committed to `flows/`
 - [x] 1.5 (code) Create PBIP project in `powerbi/` and confirm TMDL diffs cleanly in git
 
 ## 2. Registry and alignment (portfolio-registry, strategic-alignment)
@@ -32,7 +32,7 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [x] 2.7 (code) Load `strategic-priorities.csv` (5) and `strategic-objectives.csv` (25) as Provisional; define initial portfolios (PF-##)
 - [x] 2.8 (code) Load `kpis.csv` (11); assign owners once 0.9 is done; missing baselines display "pending"
 - [ ] 2.9 (config) Confidential item handling: item-level permissions set by flow; lists restricted to Strategic Operations + service account
-- [ ] 2.10 (code) Backfill import script from a standard spreadsheet template (marks Backfilled)
+- [x] 2.10 (code) Backfill import script from a standard spreadsheet template (marks Backfilled)
 - [x] 2.11 (code) Business-day calendar table for due/stale calculations (needed by intake and status flows)
 
 ## 3. Intake and governance (intake-governance)

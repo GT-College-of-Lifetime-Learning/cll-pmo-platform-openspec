@@ -18,6 +18,7 @@ import argparse
 import csv
 import json
 import sys
+import xml.sax.saxutils as sax
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -225,12 +226,91 @@ def check(strict_provisional: bool) -> int:
     return 0
 
 
+def esc(v) -> str:
+    return sax.escape(str(v))
+
+
+def xml_type(v) -> str:
+    if isinstance(v, bool):
+        return "Boolean" if v else "Boolean"
+    if isinstance(v, (int, float)):
+        return "Number"
+    return "Text"
+
+
+def emit_pnp_data(list_name: str, mapping: dict, schema: dict, out_dir: Path) -> Path:
+    """Emit a PnP provisioning <pnp:File>/DataRows-style XML fragment for one list.
+
+    Task 2.10: the backfill import path. Strategic Operations imports a
+    standard spreadsheet (work-items-backfill.csv shape), this emits a
+    PnP-consumable XML with <pnp:DataRow> elements that Add-PnPDataRowsToSiteTemplate
+    applies to the live site. IDs (CLL-YY-NNNN) are supplied by the template
+    itself — the CSV's ItemId column must already be populated (the analyst
+    gets IDs from Strategic Operations' counter before import).
+    """
+    lst = schema[list_name]
+    fields = {f["internalName"]: f for f in lst["fields"]}
+    columns = dict(mapping["columns"])
+    columns.update(mapping.get("optional_columns", {}))
+
+    path = SEED / mapping["file"]
+    with open(path, encoding="utf-8-sig", newline="") as fh:
+        rows = list(csv.DictReader(fh))
+
+    out_path = out_dir / f"{list_name}.data.xml"
+    with open(out_path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write('<?xml version="1.0" encoding="utf-8"?>\n')
+        fh.write('<pnp:DataRows xmlns:pnp="http://schemas.microsoft.com/pnp/provisioning/2021/03" '
+                 'List="{}">\n'.format(esc(list_name)))
+        for row in rows:
+            if "skip_rows_where" in mapping and any(
+                row.get(k) == v for k, v in mapping["skip_rows_where"].items()
+            ):
+                continue
+            fh.write("  <pnp:DataRow>\n")
+            for csv_col, field_name in columns.items():
+                raw = (row.get(csv_col) or "").strip()
+                if not raw:
+                    continue
+                field = fields[field_name]
+                v = coerce(raw, field["type"])
+                if field["type"] == "Boolean":
+                    val = "true" if v else "false"
+                else:
+                    val = esc(v)
+                fh.write(f'    <pnp:DataValue FieldName="{esc(field_name)}">{val}</pnp:DataValue>\n')
+            fh.write("  </pnp:DataRow>\n")
+        fh.write("</pnp:DataRows>\n")
+    return out_path
+
+
+def export(out_dir_name: str) -> int:
+    schema = load_schema()
+    out_dir = ROOT / "sharepoint" / out_dir_name
+    out_dir.mkdir(parents=True, exist_ok=True)
+    # Validation gate first: never emit data that fails the check.
+    if check(strict_provisional=False) != 0:
+        print("Refusing to export: seed data failed validation.", file=sys.stderr)
+        return 1
+    for list_name in ("Units", "StrategicPriorities", "StrategicObjectives", "KPIs", "WorkItems"):
+        p = emit_pnp_data(list_name, MAPPINGS[list_name], schema, out_dir)
+        print(f"OK  {p}")
+    print(f"\nPnP data XML emitted to {out_dir}")
+    print("Apply with: Add-PnPDataRowsToSiteTemplate / Invoke-PnPTemplate against the target site.")
+    return 0
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Validate (and later load) CLL-SPM seed data")
     ap.add_argument("--check", action="store_true", help="validate seed CSVs against the schema")
     ap.add_argument("--strict-provisional", action="store_true",
                     help="require Provisional=TRUE on every strategy seed row")
+    ap.add_argument("--export", action="store_true",
+                    help="emit PnP data XML per list (task 2.10 import path)")
+    ap.add_argument("--out-dir", default="lists", help="output dir under sharepoint/ for --export")
     args = ap.parse_args()
+    if args.export:
+        sys.exit(export(args.out_dir))
     if not args.check:
         ap.print_help()
         sys.exit(2)

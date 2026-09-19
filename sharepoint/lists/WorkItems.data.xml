@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pnp:DataRows xmlns:pnp="http://schemas.microsoft.com/pnp/provisioning/2021/03" List="WorkItems">
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="ItemId">CLL-26-0001</pnp:DataValue>
+    <pnp:DataValue FieldName="Level">Project</pnp:DataValue>
+    <pnp:DataValue FieldName="Title">CLL Strategic Portfolio Management - Phase 1</pnp:DataValue>
+    <pnp:DataValue FieldName="PrimaryPriorityId">SP-05</pnp:DataValue>
+    <pnp:DataValue FieldName="PrimaryObjectiveId">SO-5.3</pnp:DataValue>
+    <pnp:DataValue FieldName="AlignmentCategory">Strategic</pnp:DataValue>
+    <pnp:DataValue FieldName="Tier">1</pnp:DataValue>
+    <pnp:DataValue FieldName="LeadUnitId">DEAN</pnp:DataValue>
+    <pnp:DataValue FieldName="ContributingUnitIds">ALL</pnp:DataValue>
+    <pnp:DataValue FieldName="Sponsor">Bill</pnp:DataValue>
+    <pnp:DataValue FieldName="Lead">Kevin Wong</pnp:DataValue>
+    <pnp:DataValue FieldName="Stage">Approved</pnp:DataValue>
+    <pnp:DataValue FieldName="StartDate">2026-10-01</pnp:DataValue>
+    <pnp:DataValue FieldName="TargetEndDate">2026-12-18</pnp:DataValue>
+    <pnp:DataValue FieldName="ExecutionTool">OpenSpec (git)</pnp:DataValue>
+    <pnp:DataValue FieldName="Confidential">false</pnp:DataValue>
+    <pnp:DataValue FieldName="Backfilled">true</pnp:DataValue>
+  </pnp:DataRow>
+</pnp:DataRows>

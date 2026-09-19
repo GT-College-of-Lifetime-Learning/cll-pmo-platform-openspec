@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pnp:DataRows xmlns:pnp="http://schemas.microsoft.com/pnp/provisioning/2021/03" List="Units">
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="UnitId">DEAN</pnp:DataValue>
+    <pnp:DataValue FieldName="Name">Office of the Dean / central operations</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitActive">true</pnp:DataValue>
+    <pnp:DataValue FieldName="PilotWave">1.0</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitNote">Includes Strategic Operations</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="UnitId">GTPE</pnp:DataValue>
+    <pnp:DataValue FieldName="Name">Georgia Tech Professional Education</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitActive">true</pnp:DataValue>
+    <pnp:DataValue FieldName="PilotWave">1.0</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="UnitId">GTLI</pnp:DataValue>
+    <pnp:DataValue FieldName="Name">Georgia Tech Language Institute</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitActive">true</pnp:DataValue>
+    <pnp:DataValue FieldName="PilotWave">1.0</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitNote">Includes Language and Communications initiatives</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="UnitId">CEISMC</pnp:DataValue>
+    <pnp:DataValue FieldName="Name">CEISMC</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitActive">true</pnp:DataValue>
+    <pnp:DataValue FieldName="PilotWave">2.0</pnp:DataValue>
+  </pnp:DataRow>
+  <pnp:DataRow>
+    <pnp:DataValue FieldName="UnitId">SAV</pnp:DataValue>
+    <pnp:DataValue FieldName="Name">Georgia Tech-Savannah</pnp:DataValue>
+    <pnp:DataValue FieldName="UnitActive">true</pnp:DataValue>
+    <pnp:DataValue FieldName="PilotWave">2.0</pnp:DataValue>
+  </pnp:DataRow>
+</pnp:DataRows>
