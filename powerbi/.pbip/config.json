@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "artifacts": [
+    {
+      "$type": "PBISemanticModel",
+      "semanticModel": {
+        "displayName": "CLL-SPM-SemanticModel",
+        "powerBiRoot": "CLL-SPM.SemanticModel"
+      }
+    },
+    {
+      "$type": "PBIPowerBIReport",
+      "report": {
+        "displayName": "CLL-SPM-Report",
+        "powerBiRoot": "CLL-SPM.Report"
+      }
+    }
+  ],
+  "settings": {
+    "automaticBindingToSemanticModel": true
+  }
+}

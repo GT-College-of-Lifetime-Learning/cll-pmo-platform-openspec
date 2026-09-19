@@ -20,7 +20,7 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [x] 1.2 (code) Provisioning script skeleton that can deploy lists to a test site and to production
 - [ ] 1.3 (config) Create `CLL-SPM` solution in the default environment with environment variables (site URL, list IDs) and connection references
 - [ ] 1.4 (code) Export/unpack routine for the solution (`pac solution export` + `unpack`) committed to `flows/`
-- [ ] 1.5 (code) Create PBIP project in `powerbi/` and confirm TMDL diffs cleanly in git
+- [x] 1.5 (code) Create PBIP project in `powerbi/` and confirm TMDL diffs cleanly in git
 
 ## 2. Registry and alignment (portfolio-registry, strategic-alignment)
 - [x] 2.1 (code) Define list schemas: Units, UnitAccess, StrategicPriorities, StrategicObjectives, KPIs, KpiValues, Portfolios, WorkItems, StatusUpdates, Milestones, IntakeRequests, Decisions, Counters
@@ -51,7 +51,7 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [ ] 4.3 (config) F4: validate Red → path/ask required; append StatusUpdates; update milestone forecast
 - [ ] 4.4 (config) F5: pre-due reminder, overdue reminder, unit-head escalation at +5 business days
 - [ ] 4.5 (config) F6: manual KPI reminders and Late flag
-- [ ] 4.6 (code) Refresh measures using the business-day calendar (task 2.11) for due/stale calculations
+- [x] 4.6 (code) Refresh measures using the business-day calendar (task 2.11) for due/stale calculations
 
 ## 5. Project workspaces (project-workspaces)
 - [x] 5.1 (code) Charter, risk/issue log, and closeout templates in `docs/templates/`
@@ -60,10 +60,10 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [ ] 5.4 [OIT] Confirm retention label to apply on closeout; read-only on Closed
 
 ## 6. Semantic model and dashboards (executive-dashboards)
-- [ ] 6.1 (code) Star schema: facts StatusUpdates, KpiValues, Milestones; dims WorkItems, Priorities, Portfolios, Units, KPIs, Date
-- [ ] 6.1a (code) ConfidentialCounts snapshot (refresh-time, non-identifying; design D13) + "+N Confidential" measure folded into totals
-- [ ] 6.2 (code) Measures: latest RAG, status currency %, decisions needed, alignment coverage, effort split, intake aging, KPI progress
-- [ ] 6.3 (code) RLS roles Executive and Unit driven by UnitAccess + USERPRINCIPALNAME(); detail tables use NOT(Confidential) OR LeadUnitId = own unit (D13); test with "View as"
+- [x] 6.1 (code) Star schema: facts StatusUpdates, KpiValues, Milestones; dims WorkItems, Priorities, Portfolios, Units, KPIs, Date
+- [x] 6.1a (code) ConfidentialCounts snapshot (refresh-time, non-identifying; design D13) + "+N Confidential" measure folded into totals
+- [x] 6.2 (code) Measures: latest RAG, status currency %, decisions needed, alignment coverage, effort split, intake aging, KPI progress
+- [x] 6.3 (code) RLS roles Executive and Unit driven by UnitAccess + USERPRINCIPALNAME(); detail tables use NOT(Confidential) OR LeadUnitId = own unit (D13); test with "View as"
 - [ ] 6.4 (code) Pages: Dean Overview (with phone layout), Governance, Unit, Priority detail, Item drill-through
 - [ ] 6.5 (code) Freshness stamp on every page; status shown with text/shape, not color alone
 - [ ] 6.6 (config) Scheduled refresh ≥ daily; failure notification to portfolio analyst

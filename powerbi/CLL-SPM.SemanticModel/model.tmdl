@@ -1,0 +1,380 @@
+model CLL_SPM = {
+    culture: 'en-US';
+    defaultPowerBIDataSourceVersion: powerBI_V3;
+
+    /// Data sources: SharePoint Online lists via the built-in connector.
+    /// Site URL and list names come from the deployment target; after OIT
+    /// provision (task 0.7) refresh the connection here. Expression below
+    /// centralizes the site URL for all list queries.
+    expression SiteUrl = "https://gatech.sharepoint.com/sites/CLL-SPM" meta [IsParameterQuery=true, Type="Text"];
+
+    table WorkItems = {
+        culture: 'en-US';
+
+        lineageTag: 'workitems-3f2a';
+
+        source: [
+            type: structured;
+            expressionSql: '';
+        ];
+
+        /// Pull from the SharePoint WorkItems list. Columns map to the
+        /// internal names in sharepoint/registry-lists.json.
+        /// During local development without a site, swap this query for the
+        /// seed CSVs (sharepoint/seed/) — see docs/BUILD.md.
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="WorkItems"]}[Items] in List;
+
+        column ItemId { lineageTag: 'wi-itemid'; dataType: string; summarizeBy: none; }
+        column Level { lineageTag: 'wi-level'; dataType: string; }
+        column Title { lineageTag: 'wi-title'; dataType: string; }
+        column ParentId { lineageTag: 'wi-parent'; dataType: string; summarizeBy: none; }
+        column PortfolioId { lineageTag: 'wi-pf'; dataType: string; summarizeBy: none; }
+        column PrimaryPriorityId { lineageTag: 'wi-pp'; dataType: string; summarizeBy: none; }
+        column PrimaryObjectiveId { lineageTag: 'wi-po'; dataType: string; summarizeBy: none; }
+        column AlignmentCategory { lineageTag: 'wi-ac'; dataType: string; }
+        column Tier { lineageTag: 'wi-tier'; dataType: string; }
+        column LeadUnitId { lineageTag: 'wi-unit'; dataType: string; summarizeBy: none; }
+        column Stage { lineageTag: 'wi-stage'; dataType: string; }
+        column StartDate { lineageTag: 'wi-start'; dataType: dateTime; }
+        column TargetEndDate { lineageTag: 'wi-end'; dataType: dateTime; }
+        column BaselineEndDate { lineageTag: 'wi-bend'; dataType: dateTime; }
+        column StageChangedOn { lineageTag: 'wi-sco'; dataType: dateTime; }
+        column EffortEstimateHrs { lineageTag: 'wi-eff'; dataType: int64; }
+        column CostEstimate { lineageTag: 'wi-cost'; dataType: int64; }
+        column Confidential { lineageTag: 'wi-conf'; dataType: boolean; }
+        column Backfilled { lineageTag: 'wi-bf'; dataType: boolean; }
+        column RequestId { lineageTag: 'wi-req'; dataType: string; summarizeBy: none; }
+        column DecisionNeeded { lineageTag: 'wi-dn'; dataType: boolean; }
+
+        /// ConfidentialCounts snapshot facts are unioned into masked measures
+        /// (design D13) — see measure [Items Total incl Confidential].
+        measure 'Items (visible)' = COUNTROWS(WorkItems);
+        measure 'Confidential Masked Count' = SUM(ConfidentialCounts[CCCount]);
+        /// D13: totals include masked Confidential rows via the snapshot table;
+        /// detail rows themselves stay RLS-filtered.
+        measure 'Items incl Confidential' = [Items (visible)] + [Confidential Masked Count];
+
+        measure 'Decisions Needed' =
+            CALCULATE(
+                COUNTROWS(WorkItems),
+                WorkItems[DecisionNeeded] = TRUE()
+            );
+
+        measure 'Alignment Coverage %' =
+            VAR Registered =
+                CALCULATE(
+                    COUNTROWS(WorkItems),
+                    WorkItems[Stage] IN { "Active", "On Hold" }
+                )
+            RETURN
+                DIVIDE(
+                    CALCULATE(
+                        COUNTROWS(WorkItems),
+                        WorkItems[Stage] IN { "Active", "On Hold" },
+                        NOT(
+                            ISBLANK(WorkItems[PrimaryPriorityId])
+                                && ISBLANK(WorkItems[AlignmentCategory])
+                        )
+                    ),
+                    Registered
+                );
+
+        measure 'Effort (Strategic)' =
+            CALCULATE(
+                SUM(WorkItems[EffortEstimateHrs]),
+                WorkItems[Stage] IN { "Active", "On Hold" },
+                WorkItems[AlignmentCategory] = "Strategic"
+            );
+
+        measure 'Effort (Operational)' =
+            CALCULATE(
+                SUM(WorkItems[EffortEstimateHrs]),
+                WorkItems[Stage] IN { "Active", "On Hold" },
+                WorkItems[AlignmentCategory] = "Operational"
+            );
+
+        measure 'Effort (Compliance)' =
+            CALCULATE(
+                SUM(WorkItems[EffortEstimateHrs]),
+                WorkItems[Stage] IN { "Active", "On Hold" },
+                WorkItems[AlignmentCategory] = "Compliance"
+            );
+
+        measure 'Effort Split (Strategic %)' =
+            VAR Total = [Effort (Strategic)] + [Effort (Operational)] + [Effort (Compliance)]
+            RETURN DIVIDE([Effort (Strategic)], Total);
+
+        /// Latest status per item: D5 — "current status" is the latest StatusUpdates row.
+        measure 'Latest RAG (overall)' =
+            CALCULATE(
+                MAX(StatusUpdates[OverallRAG]),
+                TOPN(1, StatusUpdates, StatusUpdates[PeriodEnd], DESC)
+            );
+
+        hierarchies: [];
+
+        isPrivate: false;
+    };
+
+    table StatusUpdates = {
+        culture: 'en-US';
+        lineageTag: 'statusupdates-7c1d';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="StatusUpdates"]}[Items] in List;
+
+        column ItemId { lineageTag: 'su-item'; dataType: string; summarizeBy: none; }
+        column PeriodEnd { lineageTag: 'su-pe'; dataType: dateTime; }
+        column OverallRAG { lineageTag: 'su-rag'; dataType: string; }
+        column ScheduleRAG { lineageTag: 'su-srag'; dataType: string; }
+        column ScopeRAG { lineageTag: 'su-scope'; dataType: string; }
+        column ResourceRAG { lineageTag: 'su-res'; dataType: string; }
+        column DecisionNeeded { lineageTag: 'su-dn'; dataType: boolean; }
+        column PercentComplete { lineageTag: 'su-pc'; dataType: int64; }
+        column SubmittedOn { lineageTag: 'su-on'; dataType: dateTime; }
+
+        measure 'Status Currency %' =
+            VAR CurrentItems =
+                CALCULATETABLE(
+                    VALUES(WorkItems[ItemId]),
+                    WorkItems[Stage] IN { "Active", "On Hold" }
+                )
+            VAR CurrentCount =
+                COUNTROWS(
+                    FILTER(
+                        CurrentItems,
+                        CALCULATE(MAX(StatusUpdates[SubmittedOn])) >= TODAY() - 35
+                    )
+                )
+            RETURN DIVIDE(CurrentCount, COUNTROWS(CurrentItems));
+
+        /// Task 4.6: currency buckets using the business-day calendar.
+        /// Stale = no update within the period + 5 business days (spec).
+        /// The exact business-day gap is computed against BusinessDays[BDOfYear]
+        /// after the Date table relationship is built in Desktop; the bucket
+        /// measure below uses the 35-day approximation until then and MUST
+        /// be replaced by the BD-aware version during report build (6.4).
+        measure 'Status Bucket' =
+            VAR LastUpdate = CALCULATE(MAX(StatusUpdates[SubmittedOn]))
+            VAR DaysSince = DATEDIFF(LastUpdate, TODAY(), DAY)
+            RETURN
+                IF(
+                    ISBLANK(LastUpdate), "Stale",
+                    IF(DaysSince <= 35, "Current",
+                        IF(DaysSince <= 42, "Due", "Stale")
+                    )
+                );
+
+        isPrivate: false;
+    };
+
+    table ConfidentialCounts = {
+        culture: 'en-US';
+        lineageTag: 'confcounts-91be';
+
+        /// Refresh-time snapshot written by a flow; contains NO identifying
+        /// columns (design D13). Permissive under RLS by construction.
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="ConfidentialCounts"]}[Items] in List;
+
+        column CCPriorityId { lineageTag: 'cc-p'; dataType: string; summarizeBy: none; }
+        column CCLeadUnitId { lineageTag: 'cc-u'; dataType: string; summarizeBy: none; }
+        column CCTier { lineageTag: 'cc-t'; dataType: string; }
+        column CCStage { lineageTag: 'cc-s'; dataType: string; }
+        column CCRAG { lineageTag: 'cc-r'; dataType: string; }
+        column CCPeriodEnd { lineageTag: 'cc-pe'; dataType: dateTime; }
+        column CCCount { lineageTag: 'cc-c'; dataType: int64; }
+
+        measure 'Masked Items' = SUM(ConfidentialCounts[CCCount]);
+
+        isPrivate: false;
+    };
+
+    table IntakeRequests = {
+        culture: 'en-US';
+        lineageTag: 'intake-e5a9';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="IntakeRequests"]}[Items] in List;
+
+        column RequestId { lineageTag: 'ir-id'; dataType: string; summarizeBy: none; }
+        column Title { lineageTag: 'ir-t'; dataType: string; }
+        column ReqUnitId { lineageTag: 'ir-u'; dataType: string; summarizeBy: none; }
+        column Tier { lineageTag: 'ir-tier'; dataType: string; }
+        column Status { lineageTag: 'ir-st'; dataType: string; }
+        column SubmittedDate { lineageTag: 'ir-sd'; dataType: dateTime; }
+        column EffortEst { lineageTag: 'ir-eff'; dataType: int64; }
+        column CostEst { lineageTag: 'ir-cost'; dataType: int64; }
+        column ScoreTotal { lineageTag: 'ir-score'; dataType: double; }
+
+        /// Governance view: aging = business days since submission while still
+        /// open (uses the business-day calendar from task 2.11 for exact counts
+        /// at the report layer via a related Date table; approximation below).
+        measure 'Intake Aging (days, median)' =
+            MEDIANX(
+                FILTER(
+                    IntakeRequests,
+                    IntakeRequests[Status] IN { "Submitted", "In Triage", "Needs Information", "Ready for Review", "Awaiting Decision" }
+                ),
+                DATEDIFF(IntakeRequests[SubmittedDate], TODAY(), DAY)
+            );
+
+        measure 'Open Requests' =
+            CALCULATE(
+                COUNTROWS(IntakeRequests),
+                IntakeRequests[Status] IN { "Submitted", "In Triage", "Needs Information", "Ready for Review", "Awaiting Decision" }
+            );
+
+        isPrivate: false;
+    };
+
+    table KpiValues = {
+        culture: 'en-US';
+        lineageTag: 'kpivalues-44af';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="KpiValues"]}[Items] in List;
+
+        column KpiId { lineageTag: 'kv-id'; dataType: string; summarizeBy: none; }
+        column PeriodEnd { lineageTag: 'kv-pe'; dataType: dateTime; }
+        column Value { lineageTag: 'kv-v'; dataType: double; }
+
+        isPrivate: false;
+    };
+
+    table KPIs = {
+        culture: 'en-US';
+        lineageTag: 'kpis-2d5e';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="KPIs"]}[Items] in List;
+
+        column KpiId { lineageTag: 'k-id'; dataType: string; summarizeBy: none; }
+        column KpiName { lineageTag: 'k-name'; dataType: string; }
+        column KpiPriorityId { lineageTag: 'k-p'; dataType: string; summarizeBy: none; }
+        column KpiObjectiveId { lineageTag: 'k-o'; dataType: string; summarizeBy: none; }
+        column Direction { lineageTag: 'k-dir'; dataType: string; }
+        column Baseline { lineageTag: 'k-base'; dataType: double; }
+        column Target { lineageTag: 'k-tgt'; dataType: double; }
+        column TargetDate { lineageTag: 'k-td'; dataType: dateTime; }
+        column ProvisionalFlag { lineageTag: 'k-prov'; dataType: boolean; }
+
+        measure 'KPI Latest Value' =
+            CALCULATE(
+                SUM(KpiValues[Value]),
+                TOPN(1, KpiValues, KpiValues[PeriodEnd], DESC)
+            );
+
+        measure 'KPI Progress vs Target' =
+            VAR Latest = [KPI Latest Value]
+            VAR Tgt = SELECTEDVALUE(KPIs[Target])
+            VAR Base = SELECTEDVALUE(KPIs[Baseline])
+            RETURN
+                IF(
+                    ISBLANK(Latest) || ISBLANK(Tgt),
+                    BLANK(),
+                    IF(
+                        ISBLANK(Base),
+                        BLANK(), -- displays "Baseline pending" at the report layer
+                        DIVIDE(Latest - Base, Tgt - Base)
+                    )
+                );
+
+        isPrivate: false;
+    };
+
+    table StrategicPriorities = {
+        culture: 'en-US';
+        lineageTag: 'sp-8812';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="StrategicPriorities"]}[Items] in List;
+
+        column PriorityId { lineageTag: 'sp-id'; dataType: string; summarizeBy: none; }
+        column Title { lineageTag: 'sp-t'; dataType: string; }
+        column ExecOwner { lineageTag: 'sp-o'; dataType: string; }
+        column Provisional { lineageTag: 'sp-p'; dataType: boolean; }
+        column EffectiveFrom { lineageTag: 'sp-f'; dataType: dateTime; }
+        column EffectiveTo { lineageTag: 'sp-e'; dataType: dateTime; }
+
+        isPrivate: false;
+    };
+
+    table Units = {
+        culture: 'en-US';
+        lineageTag: 'units-6f0a';
+
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="Units"]}[Items] in List;
+
+        column UnitId { lineageTag: 'u-id'; dataType: string; summarizeBy: none; }
+        column Name { lineageTag: 'u-n'; dataType: string; }
+
+        isPrivate: false;
+    };
+
+    table UnitAccess = {
+        culture: 'en-US';
+        lineageTag: 'unitaccess-4c3b';
+
+        /// Security table — must NOT be hidden from roles; drives RLS filters below.
+        query: let Source = SharePoint.Tables(SiteUrl), List = Source{[Title="UnitAccess"]}[Items] in List;
+
+        column UserUPN { lineageTag: 'ua-upn'; dataType: string; summarizeBy: none; }
+        column AccessUnitId { lineageTag: 'ua-u'; dataType: string; summarizeBy: none; }
+        column Role { lineageTag: 'ua-r'; dataType: string; }
+
+        isPrivate: false;
+    };
+
+    /// RLS roles (design D7 + D13):
+    ///   Executive: see everything.
+    ///   Unit: own unit in full (incl. own-unit Confidential) + non-confidential
+    ///         Tier 1 college-wide. ConfidentialCounts is permissive (non-identifying).
+    role Executive = {
+        modelPermission: read;
+
+        tablePermission WorkItems = {
+            filterExpression: TRUE();
+        };
+
+        tablePermission StatusUpdates = {
+            filterExpression: TRUE();
+        };
+
+        tablePermission ConfidentialCounts = {
+            filterExpression: TRUE();
+        };
+    };
+
+    role Unit = {
+        modelPermission: read;
+
+        tablePermission WorkItems = {
+            /// D13: NOT(Confidential) OR LeadUnitId = own unit
+            filterExpression:
+                NOT(WorkItems[Confidential])
+                || WorkItems[LeadUnitId] IN
+                    SELECTCOLUMNS(
+                        FILTER(UnitAccess, UnitAccess[UserUPN] = USERPRINCIPALNAME() && UnitAccess[Role] = "Unit"),
+                        "U", UnitAccess[AccessUnitId]
+                    );
+        };
+
+        tablePermission StatusUpdates = {
+            /// Same shape, via the item's unit
+            filterExpression:
+                WorkItems[LeadUnitId] IN
+                    SELECTCOLUMNS(
+                        FILTER(UnitAccess, UnitAccess[UserUPN] = USERPRINCIPALNAME() && UnitAccess[Role] = "Unit"),
+                        "U", UnitAccess[AccessUnitId]
+                    );
+        };
+
+        tablePermission ConfidentialCounts = {
+            /// Permissive by construction — no identifying columns (D13)
+            filterExpression: TRUE();
+        };
+    };
+
+    relationships: [
+        WorkItems.PrimaryPriorityId manyToOne StrategicPriorities.PriorityId,
+        WorkItems.LeadUnitId manyToOne Units.UnitId,
+        StatusUpdates.ItemId manyToOne WorkItems.ItemId,
+        KpiValues.KpiId manyToOne KPIs.KpiId,
+        KPIs.KpiPriorityId manyToOne StrategicPriorities.PriorityId
+    ];
+}

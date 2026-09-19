@@ -1,0 +1,17 @@
+{
+  "version": "5.2.0",
+  "artifacts": [
+    {
+      "$type": "PBIPPowerBIReport",
+      "report": {
+        "displayName": "CLL-SPM-Report"
+      }
+    },
+    {
+      "$type": "PBISemanticModel",
+      "semanticModel": {
+        "displayName": "CLL-SPM-SemanticModel"
+      }
+    }
+  ]
+}
