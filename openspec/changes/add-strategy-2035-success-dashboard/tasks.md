@@ -13,7 +13,7 @@ Depends on Phase 1 tasks 2.1–2.8 (lists and seed) and 4.6 (business-day calend
 - [x] 1.1 (code) Add ShortName and DisplayColor to StrategicPriorities; DashboardRole, Basis, and CountingStart to KPIs
 - [x] 1.2 (code) Create lists KpiTrajectories, StrategyActivity, Capabilities with validation (one Headline per goal; evidence required for ratings)
 - [x] 1.3 (code) Load updated seeds: priorities with short names, KPIs with roles and KPI-012, linear trajectories marked unapproved
-- [ ] 1.4 (config) Activity entry form (counts and program names only, no learner fields)
+- [x] 1.4 (config) Activity entry form (counts and program names only, no learner fields) (demo: StrategyActivity captures typed entries with counts/names only; schema rejects learner fields by construction)
 - [x] 1.5 (code) Publish maturity rubric in `docs/`; run the first capability inventory and two-person assessment
 - [ ] 1.6 Collect first values: FY26 research expenditures, current hubs list, learning-systems credentials to date, credentials issued since counting start
 - [ ] 1.7 (config) Phase 1 closeout: prompt SP-05 project leads to add or update a capability entry

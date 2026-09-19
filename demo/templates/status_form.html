@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Update {{ item['ItemId'] }}{% endblock %}
+{% block content %}
+<h1>Status update — {{ item['ItemId'] }} {{ item['Title'] }}</h1>
+{% if error %}<div class="flash" style="border-left-color:var(--red)"><strong>{{ error }}</strong></div>{% endif %}
+<p class="small muted">Pre-filled from your reminder link (status-reporting spec). Target: ≤ 15 minutes.</p>
+
+<form method="post" action="/update/{{ item['ItemId'] }}/submit?as={{ request.query_params.get('as','executive') }}">
+  <table style="max-width:720px">
+    <tr><td><label for="overall">Overall status *</label></td>
+        <td><select id="overall" name="overall" required>
+          <option value="Green">Green — on track</option>
+          <option value="Amber">Amber — at risk, recovery within my control</option>
+          <option value="Red">Red — off track or needs help beyond my authority</option>
+        </select></td></tr>
+    <tr><td><label for="schedule">Schedule</label></td>
+        <td><select id="schedule" name="schedule">
+          <option>Green</option><option>Amber</option><option>Red</option></select></td></tr>
+    <tr><td><label for="scope">Scope</label></td>
+        <td><select id="scope" name="scope">
+          <option>Green</option><option>Amber</option><option>Red</option></select></td></tr>
+    <tr><td><label for="resources">Resources</label></td>
+        <td><select id="resources" name="resources">
+          <option>Green</option><option>Amber</option><option>Red</option></select></td></tr>
+    <tr><td><label for="summary">Progress summary</label></td>
+        <td><textarea id="summary" name="summary" rows="3" style="width:100%"></textarea></td></tr>
+    <tr><td><label for="path_to_green">Path to green<br><span class="small muted">(required with Red if no decision ask)</span></label></td>
+        <td><textarea id="path_to_green" name="path_to_green" rows="2" style="width:100%"></textarea></td></tr>
+    <tr><td><label for="next_milestone">Next milestone</label></td>
+        <td><input id="next_milestone" name="next_milestone" style="width:100%"></td></tr>
+    <tr><td><label for="next_milestone_date">Milestone date</label></td>
+        <td><input id="next_milestone_date" name="next_milestone_date" type="date"></td></tr>
+    <tr><td><label for="pct">Percent complete</label></td>
+        <td><input id="pct" name="pct" type="number" min="0" max="100" value="0" style="width:6rem"></td></tr>
+    <tr><td><label><input type="checkbox" name="decision_needed" value="on"> Decision needed</label></td><td></td></tr>
+    <tr><td><label for="decision_ask">Decision ask<br><span class="small muted">(required if Decision needed selected)</span></label></td>
+        <td><textarea id="decision_ask" name="decision_ask" rows="2" style="width:100%"></textarea></td></tr>
+  </table>
+  <p><button type="submit">Submit update</button></p>
+</form>
+<p class="small muted">A Red update with neither a path to green nor a decision ask is rejected — by design.
+Red updates put your item on the Dean's Decisions Needed list until resolved.</p>
+{% endblock %}

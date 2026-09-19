@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ req['RequestId'] }}{% endblock %}
+{% block content %}
+<h1>{{ req['RequestId'] }} — {{ req['Title'] }}</h1>
+<p class="small muted">
+  Requester: {{ req['Requester'] }} · Lead unit: {{ req['ReqUnitId'] }}
+  {% if req['ContributingUnitIds'] %} · Contributing units: {{ req['ContributingUnitIds'] }}{% endif %}
+  · Tier: <strong>{{ req['Tier'] or '—' }}</strong>
+  · Status: <strong>{{ req['Status'] }}</strong>
+  · Submitted: {{ req['SubmittedDate'] }}
+  · Triage owner: {{ req['TriageOwner'] or '—' }}
+</p>
+<p class="small">{{ req['Problem'] }}</p>
+
+<h2>Progress</h2>
+<div class="flash">
+{% if req['Status'] == 'Submitted' %}
+  Received — awaiting Strategic Operations triage (a data check, not a merit review; target ≤ 5 business days).
+  {% if req['Tier'] == '1' %}Multi-unit request: classified Tier 1 at submission and routed to the TCC (design D14).{% endif %}
+{% elif req['Status'] == 'Needs Information' %}
+  Returned by triage — the requester is told exactly what is missing.
+{% elif req['Status'] == 'Ready for Review' %}
+  Triage complete. {% if req['Tier'] == '1' %}Awaiting TCC decision.{% else %}Awaiting unit-head decision (reminder at 5 business days; Strategic Ops notified at 10).{% endif %}
+{% elif req['Status'] == 'Approved' %}
+  Approved{% if req['Tier'] == '2' %} by unit head — open for TCC call-up for 10 business days{% endif %}.
+  {% if req['LinkedItemId'] %}Registry item <a href="/item/{{ req['LinkedItemId'] }}?as={{ request.query_params.get('as','executive') }}">{{ req['LinkedItemId'] }}</a> created and linked both ways.{% endif %}
+{% elif req['Status'] == 'Awaiting Decision' %}
+  <strong>Called up by the TCC</strong> — remains Approved but cannot become Active until the TCC records a decision; added to the next TCC agenda.
+{% elif req['Status'] == 'Deferred' %}
+  Deferred{% if req['RevisitDate'] %} — revisit {{ req['RevisitDate'] }}{% endif %}.
+{% elif req['Status'] == 'Declined' %}
+  Declined.
+{% endif %}
+</div>
+
+<h2>Actions (demo of the flow engine)</h2>
+{% if req['Status'] in ('Submitted',) %}
+<form method="post" action="/requests/{{ req['RequestId'] }}/triage?as={{ request.query_params.get('as','executive') }}" style="margin:.3rem 0">
+  <input type="hidden" name="action" value="complete">
+  <label class="small">Triage owner <input name="triage_owner" value="K. Osei" size="14"></label>
+  <label class="small">Tier check <input name="tier" value="{{ req['Tier'] or '' }}" size="3" placeholder="1/2"></label>
+  <button type="submit">Triage complete → ready for review</button>
+</form>
+<form method="post" action="/requests/{{ req['RequestId'] }}/triage?as={{ request.query_params.get('as','executive') }}" style="margin:.3rem 0">
+  <input type="hidden" name="action" value="needs_info">
+  <button type="submit">Return: needs information</button>
+</form>
+{% elif req['Status'] in ('Ready for Review', 'Awaiting Decision') %}
+<form method="post" action="/requests/{{ req['RequestId'] }}/decide?as={{ request.query_params.get('as','executive') }}" style="margin:.3rem 0">
+  <label class="small">Rationale <input name="rationale" size="40" placeholder="reason for the decision"></label>
+  <label class="small">Conditions <input name="conditions" size="30"></label>
+  {% if req['Status'] == 'Awaiting Decision' %}<input type="hidden" name="decides_as" value="TCC (call-up resolution)">{% endif %}
+  <select name="decision">
+    <option value="approve">Approve</option>
+    <option value="approve_cond">Approve with conditions</option>
+    <option value="defer">Defer</option>
+    <option value="decline">Decline</option>
+  </select>
+  <button type="submit">Record decision</button>
+</form>
+{% elif req['Status'] == 'Approved' and req['Tier'] == '2' %}
+<form method="post" action="/requests/{{ req['RequestId'] }}/callup?as={{ request.query_params.get('as','executive') }}" style="margin:.3rem 0">
+  <label class="small">TCC member <input name="member" value="Dean's designee" size="18"></label>
+  <button type="submit">Call up this Tier 2 approval</button>
+</form>
+{% endif %}
+
+<h2>Decision record (append-only)</h2>
+<table>
+  <thead><tr><th>ID</th><th>Date</th><th>Body</th><th>Decision</th><th>Rationale</th><th>Conditions</th></tr></thead>
+  <tbody>
+  {% for d in decisions %}
+    <tr><td>{{ d['DecisionId'] }}</td><td>{{ d['DecisionDate'] }}</td><td>{{ d['Body'] }}</td>
+        <td>{{ d['Decision'] }}</td><td class="small">{{ d['Rationale'] or '' }}</td>
+        <td class="small">{{ d['Conditions'] or '' }}</td></tr>
+  {% else %}<tr><td colspan="6" class="muted">No decisions recorded yet</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="small muted">Decisions cannot be edited or deleted; corrections are appended and reference the original.</p>
+{% endblock %}

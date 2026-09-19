@@ -58,4 +58,21 @@
 {% if item['WorkspaceUrl'] %}
 <p><a href="{{ item['WorkspaceUrl'] }}">Project workspace →</a></p>
 {% endif %}
+
+<h2>Lead actions (demo flow engine)</h2>
+<p><a class="badge b-green" href="/update/{{ item['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">Submit status update (F4)</a>
+{% if item['Stage'] in ('Approved', 'Active', 'On Hold') %}
+</p>
+<form method="post" action="/items/{{ item['ItemId'] }}/stage?as={{ request.query_params.get('as','executive') }}" style="margin:.4rem 0">
+  <label class="small">Move stage to
+    <select name="stage">
+      {% for s in ['Active','On Hold','Closing','Closed','Cancelled'] %}
+      <option value="{{ s }}">{{ s }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label class="small">Closeout summary <input name="closeout" size="40" placeholder="required for Tier 1 Closed"></label>
+  <button type="submit">Change stage</button>
+</form>
+{% endif %}
 {% endblock %}

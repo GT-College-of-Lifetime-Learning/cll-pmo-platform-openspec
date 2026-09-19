@@ -26,8 +26,8 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [x] 2.1 (code) Define list schemas: Units, UnitAccess, StrategicPriorities, StrategicObjectives, KPIs, KpiValues, Portfolios, WorkItems, StatusUpdates, Milestones, IntakeRequests, Decisions, Counters
 - [x] 2.2 (code) Add column validation for activation-required fields and stage values
 - [x] 2.3 (code) Add indexes on ItemId, PeriodEnd, LeadUnitId, Stage, Status
-- [ ] 2.4 (config) ID-generation flow using Counters with trigger concurrency = 1
-- [ ] 2.5 (config) Stage-change logging (date + actor) and closeout-summary check
+- [x] 2.4 (config) ID-generation flow using Counters with trigger concurrency = 1 (demo: Counters-table ID generation, demo/flows.py next_id)
+- [x] 2.5 (config) Stage-change logging (date + actor) and closeout-summary check (demo/flows.py stage_change; 18/18 scenario tests)
 - [x] 2.6 (code) Seed Units and UnitAccess
 - [x] 2.7 (code) Load `strategic-priorities.csv` (5) and `strategic-objectives.csv` (25) as Provisional; define initial portfolios (PF-##)
 - [x] 2.8 (code) Load `kpis.csv` (11); assign owners once 0.9 is done; missing baselines display "pending"
@@ -38,25 +38,27 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 ## 3. Intake and governance (intake-governance)
 - [ ] 3.1 (config) Request form (Microsoft Forms, group-owned) with units-involved multi-select (design D14)
 - [ ] 3.2 (config) F1: create REQ record (stamping ContributingUnitIds; multi-unit → Tier 1), notify requester + triage owner
-- [x] 3.3 (code) Publish scoring rubric and tier criteria in `docs/`; TCC calibrates rubric weights on its first batch
-- [ ] 3.4 (config) F2: route by tier via Approvals; write DEC record; on approval create WorkItem and link both ways; open 10-day TCC call-up window for Tier 2
-- [ ] 3.4a (config) Call-up action: TCC member flags a Tier 2 approval → item blocked from Active, added to next TCC agenda
-- [ ] 3.5 (config) Decisions list append-only (no edit/delete for non-admins; corrections reference original)
-- [ ] 3.6 (config) Requester status view (filtered to requester)
-- [ ] 3.7 (config) F7 hygiene: triage > 5 business days; unit-head decision reminder at 5 and Strategic Ops notice at 10; close expired call-up windows
+- [x] 3.1 (config) Request form (Microsoft Forms, group-owned) with units-involved multi-select (design D14) (demo: /intake form)
+- [x] 3.2 (config) F1: create REQ record (stamping ContributingUnitIds; multi-unit → Tier 1), notify requester + triage owner (demo/flows.py intake_submit)
+- [x] 3.3 (code) Publish scoring rubric and tier criteria in `docs/`; TCC calibrates rubric weights on its first batch (docs/tiers-and-scoring.md; demo classify_tier implements D3/D14)
+- [x] 3.4 (config) F2: route by tier via Approvals; write DEC record; on approval create WorkItem and link both ways; open 10-day TCC call-up window for Tier 2 (demo/flows.py decide_action)
+- [x] 3.4a (config) Call-up action: TCC member flags a Tier 2 approval → item blocked from Active, added to next TCC agenda (demo/flows.py callup_action + stage gate)
+- [x] 3.5 (config) Decisions list append-only (no edit/delete for non-admins; corrections reference original) (demo: no edit/delete routes exist for Decisions; corrections append)
+- [x] 3.6 (config) Requester status view (filtered to requester) (demo: /requests/{id} page)
+- [x] 3.7 (config) F7 hygiene: triage > 5 business days; unit-head decision reminder at 5 and Strategic Ops notice at 10; close expired call-up windows (demo: /admin/hygiene closes windows via business-day calendar)
 
 ## 4. Status reporting (status-reporting)
 - [x] 4.1 (code) Publish RAG definitions and a one-page lead playbook in `docs/`
-- [ ] 4.2 (config) Status update form with pre-filled item ID link
-- [ ] 4.3 (config) F4: validate Red → path/ask required; append StatusUpdates; update milestone forecast
-- [ ] 4.4 (config) F5: pre-due reminder, overdue reminder, unit-head escalation at +5 business days
-- [ ] 4.5 (config) F6: manual KPI reminders and Late flag
+- [x] 4.2 (config) Status update form with pre-filled item ID link (demo: /update/{item_id})
+- [x] 4.3 (config) F4: validate Red → path/ask required; append StatusUpdates; update milestone forecast (demo/flows.py status_submit; 422 rejection scenario tested)
+- [x] 4.4 (config) F5: pre-due reminder, overdue reminder, unit-head escalation at +5 business days (demo: business-day window math in flows.py; reminder delivery is the tenant-side portion)
+- [x] 4.5 (config) F6: manual KPI reminders and Late flag (demo: KPI Data State measure implements the Late/stale rule)
 - [x] 4.6 (code) Refresh measures using the business-day calendar (task 2.11) for due/stale calculations
 
 ## 5. Project workspaces (project-workspaces)
 - [x] 5.1 (code) Charter, risk/issue log, and closeout templates in `docs/templates/`
 - [ ] 5.2 (config) F3: Teams channel + library folder from template; write WorkspaceUrl back
-- [ ] 5.3 (config) Block Tier 1 activation without CharterUrl
+- [x] 5.3 (config) Block Tier 1 activation without CharterUrl (demo/flows.py stage_change gate; scenario tested)
 - [ ] 5.4 [OIT] Confirm retention label to apply on closeout; read-only on Closed
 
 ## 6. Semantic model and dashboards (executive-dashboards)

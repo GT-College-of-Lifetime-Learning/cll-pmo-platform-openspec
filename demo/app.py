@@ -31,6 +31,9 @@ templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent / "tem
 
 app = FastAPI(title="CLL-SPM Demo")
 
+from demo.flows import register_flow_routes  # noqa: E402
+register_flow_routes(app)
+
 TODAY = date(2026, 9, 19)
 
 def db():

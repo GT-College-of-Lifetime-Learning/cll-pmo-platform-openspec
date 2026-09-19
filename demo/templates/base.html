@@ -53,6 +53,7 @@
     <a href="/?as={{ request.query_params.get('as','executive') }}">Strategy 2035</a>
     <a href="/overview?as={{ request.query_params.get('as','executive') }}">Dean Overview</a>
     <a href="/governance?as={{ request.query_params.get('as','executive') }}">Governance</a>
+    <a href="/intake?as={{ request.query_params.get('as','executive') }}">Intake</a>
     {% if role %}
       {% if role['kind'] == 'Unit' %}
         <a href="/unit/{{ role['unit'] }}?as=unit:{{ role['unit'] }}">My Unit</a>
@@ -60,6 +61,7 @@
         <a href="/unit/DEAN?as=executive">Units</a>
       {% endif %}
     {% endif %}
+    <a href="/admin/hygiene" class="post-link">F7 hygiene</a>
   </nav>
 </header>
 <div class="rolebar">
