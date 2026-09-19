@@ -36,8 +36,6 @@ Legend: [SPONSOR] needs Bill/Dean decision · [OIT] needs Georgia Tech OIT · (c
 - [x] 2.11 (code) Business-day calendar table for due/stale calculations (needed by intake and status flows)
 
 ## 3. Intake and governance (intake-governance)
-- [ ] 3.1 (config) Request form (Microsoft Forms, group-owned) with units-involved multi-select (design D14)
-- [ ] 3.2 (config) F1: create REQ record (stamping ContributingUnitIds; multi-unit → Tier 1), notify requester + triage owner
 - [x] 3.1 (config) Request form (Microsoft Forms, group-owned) with units-involved multi-select (design D14) (demo: /intake form)
 - [x] 3.2 (config) F1: create REQ record (stamping ContributingUnitIds; multi-unit → Tier 1), notify requester + triage owner (demo/flows.py intake_submit)
 - [x] 3.3 (code) Publish scoring rubric and tier criteria in `docs/`; TCC calibrates rubric weights on its first batch (docs/tiers-and-scoring.md; demo classify_tier implements D3/D14)
