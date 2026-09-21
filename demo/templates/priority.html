@@ -4,9 +4,10 @@
 <h1>{{ priority['PriorityId'] }} — {{ priority['ShortName'] or priority['Title'] }}
   {% if priority['Provisional'] %}<span class="badge b-pend">Provisional</span>{% endif %}
 </h1>
-<p class="muted small">{{ priority['Title'] }}</p>
+<p class="lede">{{ priority['Title'] }}</p>
 
 <h2>KPIs</h2>
+<div class="tablewrap">
 <table>
   <thead><tr><th>KPI</th><th>Name</th><th>Role</th><th>Basis</th><th>Target</th><th>Frequency</th></tr></thead>
   <tbody>
@@ -14,7 +15,7 @@
     <tr>
       <td>{{ k['KpiId'] }}</td>
       <td>{{ k['KpiName'] }}</td>
-      <td>{{ k['DashboardRole'] or '—' }}</td>
+      <td>{% if k['DashboardRole'] %}<span class="badge b-navy">{{ k['DashboardRole'] }}</span>{% else %}—{% endif %}</td>
       <td>{{ k['Basis'] or '—' }}</td>
       <td>{{ k['Target'] or 'Baseline pending' }}</td>
       <td>{{ k['Frequency'] }}</td>
@@ -22,12 +23,15 @@
   {% endfor %}
   </tbody>
 </table>
+</div>
 
 {% if masked %}
-<p class="small">+{{ masked }} Confidential item(s) aligned to this goal — counted, details masked.</p>
+<p class="flash"><strong>+{{ masked }} Confidential item(s)</strong> aligned to this goal — counted in totals, details masked per role rules.</p>
 {% endif %}
 
 <h2>Aligned work items</h2>
+{% if items %}
+<div class="tablewrap">
 <table>
   <thead><tr><th>Item</th><th>Title</th><th>Tier</th><th>Stage</th><th>Lead unit</th><th>Effort (hrs)</th></tr></thead>
   <tbody>
@@ -41,9 +45,13 @@
       <td>{{ i['LeadUnitId'] }}</td>
       <td>{{ i['EffortEstimateHrs'] or '—' }}</td>
     </tr>
-  {% else %}<tr><td colspan="6" class="muted">No aligned items</td></tr>
+  {% else %}<tr><td colspan="6" class="empty"><span class="icon">🗂</span>No aligned items</td></tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
+{% else %}
+<div class="empty"><span class="icon">🗂</span>No aligned items yet</div>
+{% endif %}
 <div class="fresh">Data as of {{ generated }}</div>
 {% endblock %}

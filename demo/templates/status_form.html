@@ -1,43 +1,74 @@
 {% extends "base.html" %}
 {% block title %}Update {{ item['ItemId'] }}{% endblock %}
+{% block pagecss %}
+.error-note { background:var(--red-bg); border:1px solid var(--red); border-left:5px solid var(--red);
+              border-radius:var(--radius-sm); padding:.8rem 1rem; margin-bottom:1rem; font-size:.9rem; }
+.error-note strong { color:var(--red); }
+form.status { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+              padding:1.25rem 1.4rem; box-shadow:var(--shadow); max-width:760px; }
+form.status .field { display:flex; flex-direction:column; gap:.25rem; margin-bottom:.9rem; }
+form.status .field-row { display:flex; flex-wrap:wrap; gap:.9rem; }
+form.status .field-row .field { flex:1; min-width:150px; }
+form.status .hint { font-size:.74rem; color:var(--muted); font-weight:500; }
+form.status .check { flex-direction:row; align-items:center; gap:.5rem; }
+form.status .check input { width:1.05rem; height:1.05rem; }
+form.status input, form.status textarea, form.status select { width:100%; }
+.rag-help { font-size:.78rem; color:var(--muted); border-top:1px dashed var(--line);
+            padding-top:.7rem; margin-top:1rem; }
+.rag-help strong { color:var(--ink); }
+{% endblock %}
 {% block content %}
 <h1>Status update — {{ item['ItemId'] }} {{ item['Title'] }}</h1>
-{% if error %}<div class="flash" style="border-left-color:var(--red)"><strong>{{ error }}</strong></div>{% endif %}
-<p class="small muted">Pre-filled from your reminder link (status-reporting spec). Target: ≤ 15 minutes.</p>
+<p class="lede">Pre-filled from your reminder link. Target: ≤ 15 minutes. Updates are append-only history.</p>
 
-<form method="post" action="/update/{{ item['ItemId'] }}/submit?as={{ request.query_params.get('as','executive') }}">
-  <table style="max-width:720px">
-    <tr><td><label for="overall">Overall status *</label></td>
-        <td><select id="overall" name="overall" required>
-          <option value="Green">Green — on track</option>
-          <option value="Amber">Amber — at risk, recovery within my control</option>
-          <option value="Red">Red — off track or needs help beyond my authority</option>
-        </select></td></tr>
-    <tr><td><label for="schedule">Schedule</label></td>
-        <td><select id="schedule" name="schedule">
-          <option>Green</option><option>Amber</option><option>Red</option></select></td></tr>
-    <tr><td><label for="scope">Scope</label></td>
-        <td><select id="scope" name="scope">
-          <option>Green</option><option>Amber</option><option>Red</option></select></td></tr>
-    <tr><td><label for="resources">Resources</label></td>
-        <td><select id="resources" name="resources">
-          <option>Green</option><option>Amber</option><option>Red</option></select></td></tr>
-    <tr><td><label for="summary">Progress summary</label></td>
-        <td><textarea id="summary" name="summary" rows="3" style="width:100%"></textarea></td></tr>
-    <tr><td><label for="path_to_green">Path to green<br><span class="small muted">(required with Red if no decision ask)</span></label></td>
-        <td><textarea id="path_to_green" name="path_to_green" rows="2" style="width:100%"></textarea></td></tr>
-    <tr><td><label for="next_milestone">Next milestone</label></td>
-        <td><input id="next_milestone" name="next_milestone" style="width:100%"></td></tr>
-    <tr><td><label for="next_milestone_date">Milestone date</label></td>
-        <td><input id="next_milestone_date" name="next_milestone_date" type="date"></td></tr>
-    <tr><td><label for="pct">Percent complete</label></td>
-        <td><input id="pct" name="pct" type="number" min="0" max="100" value="0" style="width:6rem"></td></tr>
-    <tr><td><label><input type="checkbox" name="decision_needed" value="on"> Decision needed</label></td><td></td></tr>
-    <tr><td><label for="decision_ask">Decision ask<br><span class="small muted">(required if Decision needed selected)</span></label></td>
-        <td><textarea id="decision_ask" name="decision_ask" rows="2" style="width:100%"></textarea></td></tr>
-  </table>
-  <p><button type="submit">Submit update</button></p>
+{% if error %}<div class="error-note" role="alert"><strong>{{ error }}</strong></div>{% endif %}
+
+<form class="status" method="post" action="/update/{{ item['ItemId'] }}/submit?as={{ request.query_params.get('as','executive') }}">
+  <div class="field-row">
+    <div class="field"><label for="overall">Overall status</label>
+      <select id="overall" name="overall" required>
+        <option value="Green">Green — on track</option>
+        <option value="Amber">Amber — at risk, recovery within my control</option>
+        <option value="Red">Red — off track or needs help beyond my authority</option>
+      </select></div>
+    <div class="field"><label for="schedule">Schedule</label>
+      <select id="schedule" name="schedule"><option>Green</option><option>Amber</option><option>Red</option></select></div>
+    <div class="field"><label for="scope">Scope</label>
+      <select id="scope" name="scope"><option>Green</option><option>Amber</option><option>Red</option></select></div>
+    <div class="field"><label for="resources">Resources</label>
+      <select id="resources" name="resources"><option>Green</option><option>Amber</option><option>Red</option></select></div>
+  </div>
+
+  <div class="field"><label for="summary">Progress summary</label>
+    <textarea id="summary" name="summary" rows="3" placeholder="A few honest sentences."></textarea></div>
+
+  <div class="field"><label for="path_to_green">Path to green</label>
+    <textarea id="path_to_green" name="path_to_green" rows="2" placeholder="What would fix it, roughly what it takes"></textarea>
+    <span class="hint">Required with Red if there is no decision ask.</span></div>
+
+  <div class="field-row">
+    <div class="field"><label for="next_milestone">Next milestone</label>
+      <input id="next_milestone" name="next_milestone" placeholder="Milestone title"></div>
+    <div class="field"><label for="next_milestone_date">Milestone date</label>
+      <input id="next_milestone_date" name="next_milestone_date" type="date"></div>
+    <div class="field"><label for="pct">Percent complete</label>
+      <input id="pct" name="pct" type="number" min="0" max="100" value="0"></div>
+  </div>
+
+  <div class="field check"><input type="checkbox" name="decision_needed" id="decision_needed" value="on">
+    <label for="decision_needed">Decision needed</label>
+    <span class="hint">Puts your item at the top of the Dean's overview until resolved.</span></div>
+
+  <div class="field"><label for="decision_ask">Decision ask</label>
+    <textarea id="decision_ask" name="decision_ask" rows="2" placeholder="The decision, options, deadline, and the cost of not deciding"></textarea>
+    <span class="hint">Required if Decision needed is selected. Write it so a decision-maker could act without calling you.</span></div>
+
+  <button type="submit">Submit update</button>
 </form>
-<p class="small muted">A Red update with neither a path to green nor a decision ask is rejected — by design.
-Red updates put your item on the Dean's Decisions Needed list until resolved.</p>
+
+<div class="rag-help">
+  <strong>Red</strong> requires a path to green or a decision ask — the system rejects it without one, by design:
+  leadership's first question about any Red is always one of those answers.
+  A stale Green is worse than a fresh Amber.
+</div>
 {% endblock %}

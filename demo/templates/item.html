@@ -1,78 +1,114 @@
 {% extends "base.html" %}
 {% block title %}{{ item['ItemId'] }}{% endblock %}
+{% block pagecss %}
+.item-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:.5rem 1rem;
+            border-bottom:1px solid var(--line); padding-bottom:.9rem; margin-bottom:1.25rem; }
+.item-head h1 { margin:0; }
+.meta-grid { display:flex; flex-wrap:wrap; gap:.35rem 1.4rem; font-size:.83rem; color:var(--muted);
+             margin:0 0 1rem; }
+.meta-grid strong { color:var(--body); }
+.rag-dot { display:inline-flex; width:.5rem; height:.5rem; border-radius:50%; margin-right:.25rem; }
+.timeline td:first-child { white-space:nowrap; }
+.timeline .ragcell { display:flex; gap:.3rem; flex-wrap:wrap; }
+form.stageform { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                 padding:.85rem 1rem; box-shadow:var(--shadow); margin-top:.5rem; }
+form.stageform .row { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; }
+{% endblock %}
 {% block content %}
-<h1>{{ item['ItemId'] }} — {{ item['Title'] }}
+<div class="item-head">
+  <h1>{{ item['ItemId'] }} — {{ item['Title'] }}</h1>
   {% if item['Confidential'] %}<span class="badge b-stale">Confidential</span>{% endif %}
   {% if item['Backfilled'] %}<span class="badge b-pend">Backfilled</span>{% endif %}
-</h1>
-<p class="small muted">
-  {{ item['Level'] }} · Tier {{ item['Tier'] }} · {{ unit_name }} ·
-  Stage: <strong>{{ item['Stage'] }}</strong>
-  {% if item['PrimaryPriorityId'] %} · Aligned: <a href="/priority/{{ item['PrimaryPriorityId'] }}?as={{ request.query_params.get('as','executive') }}">{{ item['PrimaryPriorityId'] }} / {{ item['PrimaryObjectiveId'] or '' }}</a> ({{ item['AlignmentCategory'] }}){% else %} · {{ item['AlignmentCategory'] }}{% endif %}
-  · Sponsor: {{ item['Sponsor'] }} · Lead: {{ item['Lead'] }}
-  · {{ item['StartDate'] }} → {{ item['TargetEndDate'] }}
+  <span class="badge b-navy">{{ item['Stage'] }}</span>
+</div>
+<p class="meta-grid">
+  <span>{{ item['Level'] }} · Tier <strong>{{ item['Tier'] }}</strong></span>
+  <span>Unit: <strong>{{ unit_name }}</strong></span>
+  {% if item['PrimaryPriorityId'] %}
+  <span>Aligned: <strong><a href="/priority/{{ item['PrimaryPriorityId'] }}?as={{ request.query_params.get('as','executive') }}">{{ item['PrimaryPriorityId'] }}{% if item['PrimaryObjectiveId'] %} / {{ item['PrimaryObjectiveId'] }}{% endif %}</a></strong>
+    ({{ item['AlignmentCategory'] }})</span>
+  {% else %}<span>Category: <strong>{{ item['AlignmentCategory'] or '—' }}</strong></span>{% endif %}
+  <span>Sponsor: <strong>{{ item['Sponsor'] or '—' }}</strong></span>
+  <span>Lead: <strong>{{ item['Lead'] or '—' }}</strong></span>
+  <span><strong>{{ item['StartDate'] or '?' }}</strong> → <strong>{{ item['TargetEndDate'] or '?' }}</strong></span>
 </p>
 
+<section aria-label="Status history">
 <h2>Status history (append-only)</h2>
+<div class="tablewrap timeline">
 <table>
-  <thead><tr><th>Period</th><th>Overall</th><th>Schedule</th><th>%</th><th>Summary</th><th>Path to green / ask</th><th>Submitted</th></tr></thead>
+  <thead><tr><th>Period</th><th>Overall</th><th>Schedule</th><th>% complete</th><th>Summary</th><th>Path / ask</th><th>Submitted</th></tr></thead>
   <tbody>
   {% for h in history %}
     <tr>
       <td>{{ h['PeriodEnd'] }}</td>
-      <td><span class="badge b-{{ h['OverallRAG'] | lower }}">{{ h['OverallRAG'] }}</span>
-          {% if h['DecisionNeeded'] %}<span class="badge b-red">Decision needed</span>{% endif %}</td>
-      <td>{{ h['ScheduleRAG'] }}</td>
-      <td>{{ h['PercentComplete'] }}%</td>
-      <td class="small">{{ h['Summary'][:90] }}</td>
+      <td><div class="ragcell"><span class="rag-dot" style="background:var(--{{ h['OverallRAG'] | lower }})" aria-hidden="true"></span>
+          <span class="badge b-{{ h['OverallRAG'] | lower }}">{{ h['OverallRAG'] }}</span>
+          {% if h['DecisionNeeded'] %}<span class="badge b-red">Decision needed</span>{% endif %}</div></td>
+      <td>{{ h['ScheduleRAG'] or '—' }}</td>
+      <td>{{ h['PercentComplete'] or 0 }}%</td>
+      <td class="small">{{ h['Summary'][:110] }}</td>
       <td class="small">{{ h['PathToGreen'] or h['DecisionAsk'] or '—' }}</td>
-      <td class="small">{{ h['SubmittedOn'] }}</td>
+      <td class="small fainttx">{{ h['SubmittedOn'] }}</td>
     </tr>
-  {% else %}<tr><td colspan="7" class="muted">No updates yet</td></tr>
+  {% else %}<tr><td colspan="7" class="empty"><span class="icon">📝</span>No updates yet — <a href="/update/{{ item['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">submit the first</a></td></tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
+</section>
 
-<h2>Milestones</h2>
-<table>
-  <thead><tr><th>Milestone</th><th>Baseline</th><th>Forecast</th><th>Actual</th></tr></thead>
-  <tbody>
-  {% for m in milestones %}
-    <tr><td>{{ m['MilestoneTitle'] }}</td><td>{{ m['BaselineDate'] }}</td><td>{{ m['ForecastDate'] }}</td><td>{{ m['ActualDate'] or '—' }}</td></tr>
-  {% else %}<tr><td colspan="4" class="muted">None</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
+<section aria-label="Milestones and decisions" class="cards" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+  <div class="card">
+    <h3>Milestones</h3>
+    <table>
+      <thead><tr><th>Milestone</th><th>Base</th><th>Forecast</th><th>Actual</th></tr></thead>
+      <tbody>
+      {% for m in milestones %}
+        <tr><td>{{ m['MilestoneTitle'] }}</td><td>{{ m['BaselineDate'] }}</td><td>{{ m['ForecastDate'] }}</td><td>{{ m['ActualDate'] or '—' }}</td></tr>
+      {% else %}<tr><td colspan="4" class="empty">None</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Decisions</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Date</th><th>Decision</th><th>Rationale</th></tr></thead>
+      <tbody>
+      {% for d in decisions %}
+        <tr><td>{{ d['DecisionId'] }}</td><td>{{ d['DecisionDate'] }}</td>
+            <td><span class="badge b-{% if 'Approved' in d['Decision'] %}green{% elif 'Declined' in d['Decision'] %}red{% else %}stale{% endif %}">{{ d['Decision'] }}</span></td>
+            <td class="small">{{ d['Rationale'] }}</td></tr>
+      {% else %}<tr><td colspan="4" class="empty">None recorded</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="small muted" style="margin-bottom:0">Decisions are append-only; corrections reference the original.</p>
+  </div>
+</section>
 
-<h2>Decisions</h2>
-<table>
-  <thead><tr><th>ID</th><th>Date</th><th>Decision</th><th>Rationale</th></tr></thead>
-  <tbody>
-  {% for d in decisions %}
-    <tr><td>{{ d['DecisionId'] }}</td><td>{{ d['DecisionDate'] }}</td><td>{{ d['Decision'] }}</td><td class="small">{{ d['Rationale'] }}</td></tr>
-  {% else %}<tr><td colspan="4" class="muted">None recorded</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
-
+<section aria-label="Lead actions" id="stage">
+<h2>Lead actions</h2>
+<p><a class="badge b-navy" style="padding:.45rem 1rem" href="/update/{{ item['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">Submit status update (F4)</a></p>
+{% if item['Stage'] in ('Approved', 'Active', 'On Hold') %}
+<form class="stageform" method="post" action="/items/{{ item['ItemId'] }}/stage?as={{ request.query_params.get('as','executive') }}">
+  <div class="row">
+    <label>Move stage to
+      <select name="stage">
+        {% for s in ['Active','On Hold','Closing','Closed','Cancelled'] %}
+        <option value="{{ s }}">{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="small">Closeout summary <input name="closeout" size="36" placeholder="required for Tier 1 → Closed"></label>
+    <button type="submit">Change stage</button>
+  </div>
+  <p class="small muted" style="margin:.4rem 0 0">Activation requires title, lead unit, lead, sponsor, dates{% if item['Tier'] == '1' %}, and a charter link (Tier 1){% endif %}. Called-up items cannot activate.</p>
+</form>
+{% endif %}
 {% if item['WorkspaceUrl'] %}
 <p><a href="{{ item['WorkspaceUrl'] }}">Project workspace →</a></p>
 {% endif %}
-
-<h2>Lead actions (demo flow engine)</h2>
-<p><a class="badge b-green" href="/update/{{ item['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">Submit status update (F4)</a>
-{% if item['Stage'] in ('Approved', 'Active', 'On Hold') %}
-</p>
-<form method="post" action="/items/{{ item['ItemId'] }}/stage?as={{ request.query_params.get('as','executive') }}" style="margin:.4rem 0">
-  <label class="small">Move stage to
-    <select name="stage">
-      {% for s in ['Active','On Hold','Closing','Closed','Cancelled'] %}
-      <option value="{{ s }}">{{ s }}</option>
-      {% endfor %}
-    </select>
-  </label>
-  <label class="small">Closeout summary <input name="closeout" size="40" placeholder="required for Tier 1 Closed"></label>
-  <button type="submit">Change stage</button>
-</form>
-{% endif %}
+</section>
 {% endblock %}

@@ -5,51 +5,161 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}CLL SPM{% endblock %} · CLL Strategic Portfolio Management</title>
 <style>
-  :root { --gt-blue:#2E6FE8; --gold:#B3A369; --ink:#1a1a2e; --paper:#f7f7f5;
-          --green:#2E8B3E; --amber:#B8860B; --red:#B22222; --grey:#888; }
-  * { box-sizing: border-box; }
-  body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; background: var(--paper); color: var(--ink); }
-  a { color: var(--gt-blue); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  header.site { background: var(--ink); color: #fff; padding: .6rem 1.2rem; display: flex;
-                flex-wrap: wrap; gap: 1rem; align-items: center; }
-  header.site .brand { font-weight: 700; letter-spacing: .5px; }
-  header.site .brand small { color: var(--gold); }
-  nav.crumbs { margin-left: auto; font-size: .85rem; display: flex; gap: .8rem; flex-wrap: wrap; }
-  nav.crumbs a { color: #cfd8ff; }
-  .rolebar { background: #eef1fb; padding: .35rem 1.2rem; font-size: .8rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;}
-  .badge { display: inline-block; padding: .1rem .5rem; border-radius: 10px; font-size: .75rem; font-weight: 600; }
-  .b-green { background: #e4f2e7; color: var(--green); }
-  .b-amber { background: #fbf3dd; color: var(--amber); }
-  .b-red   { background: #fbe4e4; color: var(--red); }
-  .b-stale { background: #eee; color: #555; }
-  .b-pend  { background: #eee; color: #555; font-style: italic; }
-  main { padding: 1rem 1.2rem 3rem; max-width: 1400px; margin: 0 auto; }
-  h1 { font-size: 1.35rem; margin: .4rem 0 .2rem; }
-  h2 { font-size: 1.05rem; margin: 1.2rem 0 .4rem; color: var(--ink); }
-  table { border-collapse: collapse; width: 100%; background: #fff; font-size: .85rem; }
-  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid #e4e4e0; }
-  th { background: #f0f0ec; font-weight: 600; }
-  tr:hover td { background: #fafaf7; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; }
-  .card { background: #fff; border-radius: 8px; padding: .9rem 1rem; border: 1px solid #e4e4e0; }
-  .kpi-tile { background: #fff; border-radius: 8px; padding: .8rem 1rem; border: 1px solid #e4e4e0; }
-  .kpi-tile .num { font-size: 1.6rem; font-weight: 700; }
-  .kpi-tile .lbl { font-size: .75rem; color: #666; text-transform: uppercase; letter-spacing: .4px; }
-  .fresh { color: #777; font-size: .78rem; text-align: right; margin: .8rem 0 0; }
-  .muted { color: #777; } .small { font-size: .8rem; }
-  .flash { padding: .8rem 1rem; background: #fff8e1; border-left: 4px solid var(--amber); border-radius: 4px; margin: .6rem 0; }
+  /* ---- CLL-SPM design tokens (Georgia Tech navy + gold) ---- */
+  :root {
+    --navy:#0E2A47; --navy-deep:#081C30; --gold:#B3A369; --gold-soft:#E4DCC5;
+    --gt-blue:#2E6FE8;
+    --ink:#12263A; --body:#3C4A5A; --muted:#6B7887; --faint:#98A2AE;
+    --paper:#F5F6F4; --surface:#FFFFFF; --line:#E3E6E2; --line-strong:#CFD4CF;
+    --green:#1E7A3C; --green-bg:#E8F3EC;
+    --amber:#9A6B00; --amber-bg:#FBF3DD;
+    --red:#B3261E;  --red-bg:#FBEAE8;
+    --grey-bg:#EDEFEA; --grey-ink:#4A5561;
+    --focus:#2E6FE8;
+    --radius:10px; --radius-sm:6px;
+    --space:0.5rem;                 /* 8px scale */
+    --shadow:0 1px 3px rgba(14,42,71,.07), 0 1px 2px rgba(14,42,71,.04);
+    --font:"Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { font-family:var(--font); margin:0; background:var(--paper); color:var(--body);
+         font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+  a { color:var(--gt-blue); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  :focus-visible { outline:2.5px solid var(--focus); outline-offset:2px; border-radius:3px; }
+
+  /* skip link */
+  .skip { position:absolute; left:-999px; top:0; background:var(--gold); color:var(--navy-deep);
+          padding:.6rem 1rem; z-index:100; font-weight:700; border-radius:0 0 var(--radius-sm) 0; }
+  .skip:focus { left:0; }
+
+  /* ---- masthead ---- */
+  header.site { background:linear-gradient(180deg,var(--navy) 0%,var(--navy-deep) 100%);
+                color:#fff; padding:0 1.5rem; display:flex; align-items:center; gap:1.25rem;
+                min-height:3.5rem; position:sticky; top:0; z-index:50;
+                box-shadow:0 1px 0 rgba(255,255,255,.06) inset, 0 2px 8px rgba(8,28,48,.25); }
+  header.site .brand { font-weight:800; letter-spacing:.3px; font-size:.95rem; white-space:nowrap;
+                      display:flex; align-items:baseline; gap:.5rem; }
+  header.site .brand .mark { width:.95rem; height:.95rem; border-radius:3px; background:var(--gold);
+                             display:inline-block; transform:rotate(45deg); margin-right:.1rem; }
+  header.site .brand small { color:var(--gold-soft); font-weight:500; letter-spacing:.4px; }
+  nav.crumbs { margin-left:auto; display:flex; gap:.25rem; flex-wrap:wrap; align-items:center; }
+  nav.crumbs a { color:#C9D4E0; padding:.42rem .7rem; border-radius:var(--radius-sm);
+                 font-size:.85rem; font-weight:500; transition:background .15s,color .15s; }
+  nav.crumbs a:hover { background:rgba(255,255,255,.09); color:#fff; text-decoration:none; }
+  nav.crumbs a[aria-current="page"] { background:rgba(179,163,105,.22); color:var(--gold-soft); }
+
+  /* ---- rolebar ---- */
+  .rolebar { background:var(--surface); border-bottom:1px solid var(--line);
+             padding:.45rem 1.5rem; font-size:.8rem; display:flex; gap:1rem;
+             flex-wrap:wrap; align-items:center; }
+  .rolebar .persona { display:flex; align-items:center; gap:.5rem; font-weight:600; color:var(--ink); }
+  .rolebar .persona .dot { width:.55rem; height:.55rem; border-radius:50%; background:var(--gold); }
+  .rolebar .switch { display:flex; gap:.3rem; align-items:center; flex-wrap:wrap; }
+  .rolebar .switch span.lbl { color:var(--muted); }
+  .rolebar a.pill { padding:.22rem .65rem; border-radius:999px; border:1px solid var(--line-strong);
+                    color:var(--body); background:var(--surface); font-weight:600; font-size:.75rem; }
+  .rolebar a.pill:hover { border-color:var(--gold); color:var(--ink); text-decoration:none; }
+  .rolebar a.pill[aria-current="true"] { background:var(--navy); border-color:var(--navy); color:#fff; }
+  .rolebar .demo-note { margin-left:auto; color:var(--faint); font-size:.72rem; }
+
+  /* ---- layout ---- */
+  main { padding:1.5rem 1.5rem 4rem; max-width:1440px; margin:0 auto; }
+  h1 { font-size:1.55rem; margin:calc(var(--space)*1) 0 calc(var(--space)*.5);
+       color:var(--ink); font-weight:800; letter-spacing:-.01em; }
+  h2 { font-size:1.02rem; margin:calc(var(--space)*3) 0 calc(var(--space)*1);
+       color:var(--ink); font-weight:700; display:flex; align-items:center; gap:.55rem; }
+  h2::before { content:""; width:.85rem; height:.14rem; background:var(--gold); border-radius:2px; flex:0 0 auto; }
+  h3 { font-size:.95rem; margin:0 0 .35rem; color:var(--ink); font-weight:700; }
+  p { margin:.35rem 0 calc(var(--space)*1); }
+  .lede { color:var(--muted); font-size:.88rem; margin-top:0; }
+
+  /* ---- tables ---- */
+  .tablewrap { border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+               background:var(--surface); box-shadow:var(--shadow); }
+  table { border-collapse:collapse; width:100%; font-size:.85rem; }
+  th,td { text-align:left; padding:.55rem .8rem; }
+  thead th { background:var(--navy); color:#fff; font-weight:600; font-size:.72rem;
+             text-transform:uppercase; letter-spacing:.5px; }
+  tbody tr { border-top:1px solid var(--line); }
+  tbody tr:hover td { background:#FAFBF9; }
+  td .sub { color:var(--muted); font-size:.78rem; display:block; }
+
+  /* ---- cards & tiles ---- */
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+           gap:calc(var(--space)*1.5); }
+  .card, .kpi-tile { background:var(--surface); border:1px solid var(--line);
+                     border-radius:var(--radius); padding:1rem 1.1rem; box-shadow:var(--shadow);
+                     transition:box-shadow .15s, transform .15s; }
+  .card:hover { box-shadow:0 3px 12px rgba(14,42,71,.10); }
+  .kpi-tile .num { font-size:1.7rem; font-weight:800; color:var(--ink); letter-spacing:-.02em; }
+  .kpi-tile .lbl { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.6px;
+                   font-weight:600; margin-top:.1rem; }
+
+  /* ---- badges: color + icon + text (never color alone) ---- */
+  .badge { display:inline-flex; align-items:center; gap:.3rem; padding:.14rem .55rem;
+           border-radius:999px; font-size:.72rem; font-weight:700; white-space:nowrap; }
+  .badge::before { content:""; width:.42rem; height:.42rem; border-radius:50%;
+                   background:currentColor; flex:0 0 auto; }
+  .b-green { background:var(--green-bg); color:var(--green); }
+  .b-amber { background:var(--amber-bg); color:var(--amber); }
+  .b-red   { background:var(--red-bg);   color:var(--red); }
+  .b-stale{ background:var(--grey-bg);  color:var(--grey-ink); }
+  .b-pend { background:var(--grey-bg);  color:var(--grey-ink); font-style:italic; }
+  .b-navy { background:#E8EEF6; color:var(--navy); }
+
+  /* ---- callouts ---- */
+  .flash { padding:.85rem 1rem; background:var(--surface); border:1px solid var(--line);
+           border-left:4px solid var(--gold); border-radius:var(--radius-sm); margin:.6rem 0;
+           box-shadow:var(--shadow); }
+  .flash.alert { border-left-color:var(--red); background:var(--red-bg); }
+  .flash strong { color:var(--ink); }
+
+  /* ---- forms ---- */
+  input, select, textarea { font:inherit; color:var(--body); background:var(--surface);
+                             border:1px solid var(--line-strong); border-radius:var(--radius-sm);
+                             padding:.45rem .6rem; }
+  input:focus, select:focus, textarea:focus { outline:2.5px solid var(--focus); outline-offset:1px; }
+  label { color:var(--ink); font-weight:600; font-size:.85rem; }
+  button { font:inherit; font-weight:700; color:#fff; background:var(--navy);
+           border:none; border-radius:var(--radius-sm); padding:.5rem 1.1rem; cursor:pointer;
+           transition:background .15s; }
+  button:hover { background:#1A3F66; }
+  button.secondary { background:var(--surface); color:var(--navy); border:1px solid var(--line-strong); }
+  button.secondary:hover { background:var(--gold-soft); }
+
+  /* ---- misc ---- */
+  .fresh { color:var(--faint); font-size:.75rem; text-align:right; margin:1rem 0 0;
+           display:flex; gap:.4rem; align-items:center; justify-content:flex-end; }
+  .fresh::before { content:"⟳"; color:var(--gold); }
+  .muted { color:var(--muted); } .small { font-size:.8rem; } .fainttx { color:var(--faint); }
+  .empty { padding:1.6rem 1rem; text-align:center; color:var(--muted); }
+  .empty .icon { font-size:1.4rem; display:block; margin-bottom:.3rem; opacity:.5; }
   {% block pagecss %}{% endblock %}
-  @media (max-width: 640px) {
-    .cards { grid-template-columns: 1fr; }
-    main { padding: .7rem; }
+
+  /* ---- responsive: 1440 -> 320 ---- */
+  @media (max-width:900px) {
+    header.site { flex-wrap:wrap; padding:.6rem 1rem; }
+    nav.crumbs { margin-left:0; width:100%; order:3; }
+  }
+  @media (max-width:640px) {
+    main { padding:1rem .9rem 3rem; }
+    .cards { grid-template-columns:1fr; }
+    .rolebar { padding:.45rem .9rem; }
+    .rolebar .demo-note { display:none; }
+    table { font-size:.78rem; }
+    th,td { padding:.45rem .5rem; }
+    h1 { font-size:1.25rem; }
   }
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to main content</a>
 <header class="site">
-  <div class="brand">CLL <small>Strategic Portfolio Management</small></div>
-  <nav class="crumbs">
+  <div class="brand"><span class="mark" aria-hidden="true"></span>CLL
+    <small>Strategic Portfolio Management</small></div>
+  <nav class="crumbs" aria-label="Primary">
     <a href="/?as={{ request.query_params.get('as','executive') }}">Strategy 2035</a>
     <a href="/overview?as={{ request.query_params.get('as','executive') }}">Dean Overview</a>
     <a href="/governance?as={{ request.query_params.get('as','executive') }}">Governance</a>
@@ -61,22 +171,22 @@
         <a href="/unit/DEAN?as=executive">Units</a>
       {% endif %}
     {% endif %}
-    <a href="/admin/hygiene" class="post-link">F7 hygiene</a>
+    <a href="/admin/hygiene">F7 hygiene</a>
   </nav>
 </header>
 <div class="rolebar">
-  <span>Viewing as:
-    <strong>{{ role['kind'] }}{% if role['unit'] %} · {{ role['unit'] }}{% endif %}</strong>
+  <span class="persona"><span class="dot" aria-hidden="true"></span>
+    Viewing as <strong>{{ role['kind'] }}{% if role['unit'] %} · {{ role['unit'] }}{% endif %}</strong>
   </span>
-  <span class="small">switch:
-    <a href="/?as=executive">Executive</a> ·
-    <a href="/?as=unit:GTPE">GTPE</a> ·
-    <a href="/?as=unit:GTLI">GTLI</a> ·
-    <a href="/?as=unit:CEISMC">CEISMC</a>
+  <span class="switch"><span class="lbl">Switch:</span>
+    <a class="pill" href="/?as=executive">Executive</a>
+    <a class="pill" href="/?as=unit:GTPE">GTPE</a>
+    <a class="pill" href="/?as=unit:GTLI">GTLI</a>
+    <a class="pill" href="/?as=unit:CEISMC">CEISMC</a>
   </span>
-  <span class="small muted">demo — data refreshes {{ generated }}</span>
+  <span class="demo-note">demo · data refreshes {{ generated }}</span>
 </div>
-<main>
+<main id="main">
 {% block content %}{% endblock %}
 </main>
 </body>

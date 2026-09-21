@@ -1,49 +1,71 @@
 {% extends "base.html" %}
 {% block title %}Governance{% endblock %}
 {% block content %}
-<h1>Governance (TCC)</h1>
+<h1>Governance · TCC</h1>
+<p class="lede">Intake pipeline, requests awaiting your decision, and the decision record.</p>
 
+<section aria-label="Intake pipeline">
 <h2>Intake pipeline — by stage and age</h2>
+{% if requests %}
+<div class="tablewrap">
 <table>
-  <thead><tr><th>Request</th><th>Title</th><th>Unit</th><th>Units involved</th><th>Tier</th><th>Status</th><th>Score</th><th>Age (days)</th></tr></thead>
+  <thead><tr><th>Request</th><th>Title</th><th>Unit</th><th>Units involved</th><th>Tier</th><th>Status</th><th>Score</th><th>Age</th></tr></thead>
   <tbody>
   {% for r in requests %}
     <tr>
-      <td>{{ r['RequestId'] }}</td>
+      <td><a href="/requests/{{ r['RequestId'] }}?as={{ request.query_params.get('as','executive') }}">{{ r['RequestId'] }}</a></td>
       <td>{{ r['Title'] }}</td>
       <td>{{ r['ReqUnitId'] }}</td>
-      <td>{{ r['ContributingUnitIds'] or '—' }}</td>
-      <td>{% if r['Tier'] == '1' %}<strong>T1</strong>{% else %}T2{% endif %}</td>
-      <td>{{ r['Status'] }}</td>
-      <td>{% if r['ScoreTotal'] %}{{ r['ScoreTotal'] | round(1) }}{% else %}<span class="muted">not scored</span>{% endif %}</td>
-      <td class="small">{{ r['age_days'] }}</td>
+      <td class="small">{{ r['ContributingUnitIds'] or '—' }}</td>
+      <td>{% if r['Tier'] == '1' %}<span class="badge b-navy">T1</span>{% elif r['Tier'] == '2' %}<span class="badge b-stale">T2</span>{% else %}<span class="fainttx">—</span>{% endif %}</td>
+      <td><span class="badge b-{{ 'amber' if r['Status'] in ('Awaiting Decision','Needs Information') else 'stale' }}">{{ r['Status'] }}</span>
+        {% if r['age_days'] and r['age_days'] > 30 %}<span class="badge b-red">aging {{ r['age_days'] }}d</span>{% endif %}</td>
+      <td>{% if r['ScoreTotal'] %}<strong>{{ r['ScoreTotal'] | round(1) }}</strong>{% else %}<span class="fainttx">not scored</span>{% endif %}</td>
+      <td class="small">{{ r['age_days'] }}d</td>
     </tr>
-  {% else %}<tr><td colspan="8" class="muted">Pipeline empty</td></tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
+{% else %}
+<div class="empty"><span class="icon">📥</span>Pipeline empty — new work arrives via <a href="/intake?as={{ request.query_params.get('as','executive') }}">Intake</a>.</div>
+{% endif %}
+</section>
 
-<h2>Tier 2 approvals open for TCC call-up (10 business days)</h2>
+<section aria-label="Call-up">
+<h2>Tier 2 approvals open for call-up (10 business days)</h2>
+<div class="tablewrap">
 <table>
-  <thead><tr><th>Request</th><th>Title</th><th>Unit</th><th>Status</th></tr></thead>
+  <thead><tr><th>Request</th><th>Title</th><th>Unit</th><th>Window</th><th></th></tr></thead>
   <tbody>
   {% for t in tier2 %}
-    <tr><td>{{ t['RequestId'] }}</td><td>{{ t['Title'] }}</td><td>{{ t['ReqUnitId'] }}</td><td>Approved — call-up window open</td></tr>
-  {% else %}<tr><td colspan="4" class="muted">None</td></tr>
+    <tr><td><a href="/requests/{{ t['RequestId'] }}?as={{ request.query_params.get('as','executive') }}">{{ t['RequestId'] }}</a></td>
+        <td>{{ t['Title'] }}</td><td>{{ t['ReqUnitId'] }}</td>
+        <td><span class="badge b-amber">open</span></td>
+        <td class="small"><a href="/requests/{{ t['RequestId'] }}?as={{ request.query_params.get('as','executive') }}">review →</a></td></tr>
+  {% else %}<tr><td colspan="5" class="empty"><span class="icon">✅</span>No Tier 2 approvals awaiting call-up</td></tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
+</section>
 
-<h2>Recent decisions</h2>
+<section aria-label="Decisions">
+<h2>Recent decisions (append-only log)</h2>
+<div class="tablewrap">
 <table>
   <thead><tr><th>ID</th><th>Date</th><th>Body</th><th>Subject</th><th>Decision</th><th>Rationale</th></tr></thead>
   <tbody>
   {% for d in decisions %}
     <tr><td>{{ d['DecisionId'] }}</td><td>{{ d['DecisionDate'] }}</td><td>{{ d['Body'] }}</td>
-        <td>{{ d['SubjectId'] }}</td><td>{{ d['Decision'] }}</td>
+        <td>{{ d['SubjectId'] }}</td>
+        <td><span class="badge b-{% if 'Approved' in d['Decision'] %}green{% elif 'Declined' in d['Decision'] %}red{% else %}stale{% endif %}">{{ d['Decision'] }}</span></td>
         <td class="small">{{ d['Rationale'][:80] }}</td></tr>
+  {% else %}<tr><td colspan="6" class="empty">No decisions recorded yet</td></tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
+</section>
 <div class="fresh">Data as of {{ generated }}</div>
 {% endblock %}

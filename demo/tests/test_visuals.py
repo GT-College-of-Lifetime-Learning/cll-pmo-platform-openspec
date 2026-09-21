@@ -18,8 +18,8 @@ try:
     html = httpx.get("http://127.0.0.1:8767/?as=executive", timeout=15).text
     checks = {
         "progress ring": 'class="ring"' in html and 'stroke-dasharray' in html,
-        "term trend bars": 'aria-label="Trend by period' in html,
-        "hub timeline badges": 'Hub/start-up milestones by year' in html,
+        "term trend bars": 'aria-label="Trend:' in html,
+        "hub timeline badges": 'badge b-navy">' in html and '· +' in html,
         "credential trend": 'aria-label="Credential trend' in html,
         "expenditure gauge": 'aria-label="Research expenditures' in html and '$' in html,
         "maturity ladder": 'maturity-ladder' in html,

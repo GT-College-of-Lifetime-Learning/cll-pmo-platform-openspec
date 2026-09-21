@@ -1,56 +1,125 @@
 {% extends "base.html" %}
 {% block title %}{{ unit['Name'] }}{% endblock %}
+{% block pagecss %}
+.unit-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:.5rem 1.25rem;
+            border-bottom:1px solid var(--line); padding-bottom:1rem; margin-bottom:1.25rem; }
+.unit-head h1 { margin:0; }
+.head-badge { font-size:.75rem; font-weight:700; letter-spacing:.6px; text-transform:uppercase;
+              background:var(--gold-soft); color:var(--navy); padding:.25rem .7rem; border-radius:999px; }
+.action-panel { border:1px solid var(--amber); border-radius:var(--radius); background:var(--amber-bg);
+                padding:1rem 1.1rem; margin-bottom:1.5rem; }
+.action-panel h2 { margin:0 0 .5rem; color:var(--ink); }
+.action-panel h2::before { background:var(--amber); }
+.action-panel table { background:var(--surface); border-radius:var(--radius-sm); overflow:hidden; }
+.item-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:.9rem; }
+.item-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+             padding:.85rem 1rem; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:.45rem;
+             transition:box-shadow .15s; }
+.item-card:hover { box-shadow:0 3px 12px rgba(14,42,71,.10); }
+.item-card .top { display:flex; justify-content:space-between; gap:.6rem; align-items:flex-start; }
+.item-card .id { font-size:.72rem; font-weight:800; letter-spacing:.5px; color:var(--faint); }
+.item-card .title { font-weight:700; color:var(--ink); font-size:.92rem; margin:.1rem 0 0; }
+.item-card .meta { display:flex; flex-wrap:wrap; gap:.4rem .9rem; font-size:.75rem; color:var(--muted); }
+.item-card .meta strong { color:var(--body); }
+.item-card .statusline { display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; font-size:.78rem; }
+.item-card .actions { margin-top:auto; padding-top:.45rem; border-top:1px dashed var(--line);
+                      display:flex; gap:.6rem; flex-wrap:wrap; }
+.item-card .actions a { font-size:.78rem; font-weight:700; }
+.stage-chip { font-size:.7rem; font-weight:700; padding:.14rem .55rem; border-radius:999px;
+              background:var(--grey-bg); color:var(--grey-ink); }
+.stage-chip.s-active { background:var(--green-bg); color:var(--green); }
+.stage-chip.s-hold { background:var(--amber-bg); color:var(--amber); }
+.stage-chip.s-closed { background:#E4E7EA; color:var(--grey-ink); }
+{% endblock %}
 {% block content %}
-<h1>{{ unit['Name'] }} — unit view</h1>
+<div class="unit-head">
+  <h1>{{ unit['Name'] }}</h1>
+  <span class="head-badge">Unit view</span>
+  <span class="small muted">Your items, what needs attention, and what's coming up. Updates take ≤ 15 minutes.</span>
+</div>
 
 {% if action_needed %}
-<h2>Action needed</h2>
-<table>
-  <thead><tr><th>Item</th><th>Title</th><th>Why</th></tr></thead>
-  <tbody>
-  {% for a in action_needed %}
-    <tr>
-      <td><a href="/item/{{ a.item['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">{{ a.item['ItemId'] }}</a></td>
-      <td>{{ a.item['Title'] }}</td>
-      <td>{% for w in a['why'] %}<span class="badge b-stale">{{ w }}</span> {% endfor %}</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+<section class="action-panel" aria-label="Action needed">
+  <h2>Action needed ({{ action_needed | length }})</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Item</th><th>Title</th><th>Why</th><th>Fix</th></tr></thead>
+    <tbody>
+    {% for a in action_needed %}
+      <tr>
+        <td><a href="/item/{{ a.item['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">{{ a.item['ItemId'] }}</a></td>
+        <td>{{ a.item['Title'] }}</td>
+        <td>{% for w in a['why'] %}<span class="badge {% if w == 'Stale' %}b-stale{% else %}b-amber{% endif %}">{{ w }}</span> {% endfor %}</td>
+        <td class="small">
+          {% if 'Stale' in a['why'] %}<a href="/update/{{ a.item['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">Submit update</a>{% endif %}
+          {% if 'Unaligned' in a['why'] %}set priority or category{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
 {% endif %}
 
-<h2>Our items</h2>
-<table>
-  <thead><tr><th>Item</th><th>Title</th><th>Tier</th><th>Stage</th><th>Latest RAG</th><th>Updated</th></tr></thead>
-  <tbody>
+<section aria-label="Our items">
+<h2>Our items ({{ items | length }})</h2>
+{% if items %}
+<div class="item-cards">
   {% for i in items %}
     {% set s = statuses.get(i['ItemId']) %}
-    <tr>
-      <td><a href="/item/{{ i['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">{{ i['ItemId'] }}</a></td>
-      <td>{{ i['Title'] }}</td>
-      <td>{{ i['Tier'] }}</td>
-      <td>{{ i['Stage'] }}</td>
-      <td>
+    <article class="item-card">
+      <div class="top">
+        <div>
+          <div class="id">{{ i['ItemId'] }} · TIER {{ i['Tier'] }}</div>
+          <p class="title"><a href="/item/{{ i['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">{{ i['Title'] }}</a></p>
+        </div>
+        <span class="stage-chip s-{{ i['Stage'] | lower | replace(' ', '') }}">{{ i['Stage'] }}</span>
+      </div>
+      <div class="meta">
+        {% if i['PrimaryPriorityId'] %}<span>Aligned: <strong>{{ i['PrimaryPriorityId'] }}</strong></span>{% endif %}
+        <span>Lead: <strong>{{ i['Lead'] or '—' }}</strong></span>
+        {% if i['EffortEstimateHrs'] %}<span>Effort: <strong>{{ i['EffortEstimateHrs'] }} hrs</strong></span>{% endif %}
+      </div>
+      <div class="statusline">
         {% if i['Confidential'] %}<span class="badge b-stale">Confidential</span>{% endif %}
-        {% if s %}<span class="badge b-{{ s['OverallRAG'] | lower }}">{{ s['OverallRAG'] }}</span>
-        {% if s['PeriodEnd'] <= '2026-08-31' %} <span class="badge b-stale">Stale</span>{% endif %}
-        {% else %}<span class="badge b-stale">No update</span>{% endif %}
-      </td>
-      <td class="small">{{ s['PeriodEnd'] if s else '—' }}</td>
-    </tr>
+        {% if s %}
+          <span class="badge b-{{ s['OverallRAG'] | lower }}">{{ s['OverallRAG'] }}</span>
+          {% if s['PeriodEnd'] <= '2026-08-31' %}<span class="badge b-stale">Stale</span>{% endif %}
+          {% if s['DecisionNeeded'] %}<span class="badge b-red">Decision needed</span>{% endif %}
+          <span class="small fainttx">updated {{ s['PeriodEnd'] }} · {{ s['PercentComplete'] }}%</span>
+        {% else %}
+          <span class="badge b-stale">No update</span>
+        {% endif %}
+      </div>
+      <div class="actions">
+        <a href="/update/{{ i['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">Submit status update</a>
+        {% if i['Stage'] in ('Approved', 'Active', 'On Hold') %}
+        <a href="/item/{{ i['ItemId'] }}?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}#stage">Change stage</a>
+        {% endif %}
+      </div>
+    </article>
   {% endfor %}
-  </tbody>
-</table>
+</div>
+{% else %}
+<div class="empty"><span class="icon">🗂</span>No registered items for this unit yet.
+Work ≥ 80 staff hours or ≥ 6 weeks should be <a href="/intake?as={{ request.query_params.get('as','unit:' + unit['UnitId']) }}">requested</a>.</div>
+{% endif %}
+</section>
 
+<section aria-label="Milestones">
 <h2>Upcoming milestones</h2>
+<div class="tablewrap">
 <table>
   <thead><tr><th>Date</th><th>Item</th><th>Milestone</th></tr></thead>
   <tbody>
   {% for m in milestones %}
     <tr><td>{{ m['ForecastDate'] }}</td><td>{{ m['ItemId'] }}</td><td>{{ m['MilestoneTitle'] }}</td></tr>
-  {% else %}<tr><td colspan="3" class="muted">None</td></tr>
+  {% else %}<tr><td colspan="3" class="empty"><span class="icon">📅</span>None upcoming</td></tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
+</section>
 <div class="fresh">Data as of {{ generated }}</div>
 {% endblock %}

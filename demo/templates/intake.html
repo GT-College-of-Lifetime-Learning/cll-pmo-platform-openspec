@@ -1,43 +1,74 @@
 {% extends "base.html" %}
 {% block title %}New request{% endblock %}
+{% block pagecss %}
+form.intake { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+              padding:1.25rem 1.4rem; box-shadow:var(--shadow); max-width:760px; }
+form.intake .field { display:flex; flex-direction:column; gap:.25rem; margin-bottom:.9rem; }
+form.intake .field-row { display:flex; flex-wrap:wrap; gap:.9rem; }
+form.intake .field-row .field { flex:1; min-width:180px; }
+form.intake .hint { font-size:.74rem; color:var(--muted); font-weight:500; }
+form.intake .check { flex-direction:row; align-items:center; gap:.5rem; }
+form.intake .check input { width:1.05rem; height:1.05rem; }
+form.intake input[type=text], form.intake input:not([type]), form.intake textarea, form.intake select { width:100%; }
+.tier-guide { background:var(--surface); border:1px solid var(--gold); border-radius:var(--radius);
+              padding:.9rem 1.1rem; max-width:760px; font-size:.8rem; color:var(--body); }
+.tier-guide strong { color:var(--ink); }
+{% endblock %}
 {% block content %}
 <h1>Submit a project request</h1>
-<p class="small muted">One standard request form (intake spec). Multi-select contributing units —
-requests involving 2+ CLL units are Tier 1 and route to the TCC (design D14).</p>
+<p class="lede">One standard request form. Requests involving 2+ CLL units are Tier 1 and route to the TCC (design D14).</p>
 
-<form method="post" action="/intake/submit?as={{ request.query_params.get('as','executive') }}">
-  <table style="max-width:720px">
-    <tr><td><label for="title">Title *</label></td>
-        <td><input id="title" name="title" required style="width:100%"></td></tr>
-    <tr><td><label for="requester">Requester *</label></td>
-        <td><input id="requester" name="requester" required style="width:100%"></td></tr>
-    <tr><td><label for="unit">Lead unit *</label></td>
-        <td><select id="unit" name="unit" required>
-          {% for u in units %}<option value="{{ u['UnitId'] }}">{{ u['Name'] }}</option>{% endfor %}
-        </select></td></tr>
-    <tr><td><label for="contributing">Other CLL units involved<br><span class="small muted">(comma-separated UnitIds, e.g. GTPE,GTLI)</span></label></td>
-        <td><input id="contributing" name="contributing" style="width:100%"></td></tr>
-    <tr><td><label for="problem">Problem / opportunity *</label></td>
-        <td><textarea id="problem" name="problem" required rows="3" style="width:100%"></textarea></td></tr>
-    <tr><td><label for="priority">Proposed Strategy 2035 priority</label></td>
-        <td><select id="priority" name="priority">
-          <option value="">(none — operational)</option>
-          <option value="SP-01">SP-01 Learning Systems Leaders</option>
-          <option value="SP-02">SP-02 Global Learning Hubs</option>
-          <option value="SP-03">SP-03 Learner Reach</option>
-          <option value="SP-04">SP-04 Research Leadership</option>
-          <option value="SP-05">SP-05 Digital Transformation</option>
-        </select></td></tr>
-    <tr><td><label for="effort">Effort estimate (staff hours)</label></td>
-        <td><input id="effort" name="effort" type="number" min="0" style="width:8rem"></td></tr>
-    <tr><td><label for="cost">Cost estimate (USD)</label></td>
-        <td><input id="cost" name="cost" type="number" min="0" style="width:8rem"></td></tr>
-    <tr><td><label><input type="checkbox" name="external" value="on"> External partner/client commitment</label></td><td></td></tr>
-    <tr><td><label><input type="checkbox" name="new_launch" value="on"> New program/service launch</label></td><td></td></tr>
-  </table>
-  <p><button type="submit">Submit request</button></p>
+<form class="intake" method="post" action="/intake/submit?as={{ request.query_params.get('as','executive') }}">
+  <div class="field"><label for="title">Title</label>
+    <input id="title" name="title" required placeholder="What is this work called?"></div>
+
+  <div class="field-row">
+    <div class="field"><label for="requester">Requester</label>
+      <input id="requester" name="requester" required placeholder="Your name"></div>
+    <div class="field"><label for="unit">Lead unit</label>
+      <select id="unit" name="unit" required>
+        {% for u in units %}<option value="{{ u['UnitId'] }}">{{ u['Name'] }}</option>{% endfor %}
+      </select></div>
+  </div>
+
+  <div class="field"><label for="contributing">Other CLL units involved</label>
+    <input id="contributing" name="contributing" placeholder="e.g. GTPE,GTLI — comma-separated">
+    <span class="hint">Two or more units here makes the request Tier 1 (TCC decides).</span></div>
+
+  <div class="field"><label for="problem">Problem / opportunity</label>
+    <textarea id="problem" name="problem" required rows="3" placeholder="What problem does this solve?"></textarea></div>
+
+  <div class="field-row">
+    <div class="field"><label for="priority">Proposed Strategy 2035 priority</label>
+      <select id="priority" name="priority">
+        <option value="">(none — operational)</option>
+        <option value="SP-01">SP-01 · Learning Systems Leaders</option>
+        <option value="SP-02">SP-02 · Global Learning Hubs</option>
+        <option value="SP-03">SP-03 · Learner Reach</option>
+        <option value="SP-04">SP-04 · Research Leadership</option>
+        <option value="SP-05">SP-05 · Digital Transformation</option>
+      </select></div>
+    <div class="field"><label for="effort">Effort estimate (staff hours)</label>
+      <input id="effort" name="effort" type="number" min="0" placeholder="0"></div>
+    <div class="field"><label for="cost">Cost estimate (USD)</label>
+      <input id="cost" name="cost" type="number" min="0" placeholder="0"></div>
+  </div>
+
+  <div class="field-row">
+    <div class="field check"><input type="checkbox" name="external" id="external" value="on">
+      <label for="external">External partner / client commitment</label></div>
+    <div class="field check"><input type="checkbox" name="new_launch" id="new_launch" value="on">
+      <label for="new_launch">New program / service launch</label></div>
+  </div>
+
+  <button type="submit">Submit request</button>
 </form>
-<p class="small muted">Tier thresholds: 2+ units, external commitment, ≥$25K, ≥400 hrs, or a named
-Strategy 2035 deliverable → Tier 1 (TCC decides). Else ≥80 hrs, ≥6 weeks, or a new launch →
-Tier 2 (unit head decides, TCC may call up). Below that: operational, not registered.</p>
+
+<div class="tier-guide">
+  <strong>Tier thresholds (published criteria):</strong>
+  2+ units, external commitment, ≥ $25K, ≥ 400 hrs, or a named Strategy 2035 deliverable →
+  <strong>Tier 1</strong> (TCC decides). Otherwise ≥ 80 hrs, ≥ 6 weeks, or a new launch →
+  <strong>Tier 2</strong> (unit head decides; TCC may call up within 10 business days).
+  Below that: operational work — not registered.
+</div>
 {% endblock %}
