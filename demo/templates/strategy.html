@@ -22,6 +22,10 @@
                 padding:.9rem 1.1rem; box-shadow:var(--shadow); margin-bottom:1.5rem; }
 .timeline-bar .cap { font-size:.7rem; font-weight:700; letter-spacing:.7px; color:var(--muted);
                      text-transform:uppercase; margin-bottom:.5rem; }
+.goal-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:.85rem; align-items:stretch; }
+@media (max-width:1250px) { .goal-grid { grid-template-columns:repeat(3,1fr); } }
+@media (max-width:900px)  { .goal-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:640px)  { .goal-grid { grid-template-columns:1fr; } }
 .goal-card { display:flex; flex-direction:column; gap:.55rem; position:relative; overflow:hidden; }
 .goal-card .band { height:4px; border-radius:0; margin:-1rem -1.1rem .4rem; }
 .goal-card .goal-no { font-size:.68rem; font-weight:800; letter-spacing:.8px; color:var(--muted);
@@ -86,7 +90,7 @@
 </section>
 
 <section aria-label="Strategy goals">
-<div class="cards">
+<div class="goal-grid">
 {% for g in goals %}
 <article class="card goal-card">
   <div class="band" style="background:linear-gradient(90deg,{{ g.color }},{{ g.color }}CC)" aria-hidden="true"></div>
