@@ -42,6 +42,7 @@ CREATE TABLE WorkItems (ItemId TEXT PRIMARY KEY, Level TEXT, Title TEXT, ParentI
     SecondaryPriorityIds TEXT, AlignmentCategory TEXT, AlignmentJustification TEXT,
     Tier TEXT, LeadUnitId TEXT, ContributingUnitIds TEXT, Sponsor TEXT, Lead TEXT,
     Stage TEXT, StartDate TEXT, TargetEndDate TEXT, BaselineEndDate TEXT,
+    SyncEnabled INT DEFAULT 0, LastSyncOn TEXT, PlanUrl TEXT,
     StageChangedOn TEXT, StageChangedBy TEXT, EffortEstimateHrs INT, CostEstimate INT,
     ExecutionTool TEXT, ExecutionLink TEXT, WorkspaceUrl TEXT, CharterUrl TEXT,
     KpiIds TEXT, Confidential INT, Backfilled INT, RequestId TEXT);
@@ -50,7 +51,7 @@ CREATE TABLE StatusUpdates (ItemId TEXT, PeriodEnd TEXT, OverallRAG TEXT, Schedu
     NextMilestoneDate TEXT, PercentComplete INT, DecisionNeeded INT, DecisionAsk TEXT,
     SubmittedBy TEXT, SubmittedOn TEXT);
 CREATE TABLE Milestones (ItemId TEXT, MilestoneTitle TEXT, BaselineDate TEXT,
-    ForecastDate TEXT, ActualDate TEXT, IsExecutive INT);
+    ForecastDate TEXT, ActualDate TEXT, IsExecutive INT, Source TEXT DEFAULT 'manual');
 CREATE TABLE IntakeRequests (RequestId TEXT PRIMARY KEY, Title TEXT, Requester TEXT,
     ReqUnitId TEXT, ContributingUnitIds TEXT, Problem TEXT, ProposedPriorityId TEXT,
     EffortEst INT, CostEst INT, ExternalCommitment INT, Tier TEXT,
@@ -82,6 +83,11 @@ CREATE TABLE DataNeeds (NeedId TEXT PRIMARY KEY, Element TEXT, ConsumerView TEXT
 CREATE TABLE SourceDeclarations (DeclarationId TEXT PRIMARY KEY, Element TEXT,
     System TEXT, Format TEXT, Refresh TEXT, Steward TEXT, Notes TEXT,
     MatchedNeedId TEXT, RecordedOn TEXT);
+CREATE TABLE Allocations (AllocationId INTEGER PRIMARY KEY AUTOINCREMENT,
+    Period TEXT, ItemId TEXT, UnitId TEXT, Granularity TEXT, Target TEXT,
+    Percent REAL, AllocatedBy TEXT, AllocatedOn TEXT, ReviewedOn TEXT);
+CREATE TABLE UnitCapacity (UnitId TEXT, Period TEXT, AvailableFte REAL,
+    DeclaredBy TEXT, PRIMARY KEY (UnitId, Period));
 CREATE INDEX idx_wi_stage ON WorkItems(Stage);
 CREATE INDEX idx_wi_unit ON WorkItems(LeadUnitId);
 CREATE INDEX idx_su_item ON StatusUpdates(ItemId, PeriodEnd);
@@ -342,8 +348,8 @@ def main():
         ("CLL-26-0002", "Data pipeline v1 (past)", "2026-07-31", "2026-07-28", "2026-07-28"),
     ]
     for (iid, title, base, forecast, actual) in ms:
-        con.execute("INSERT INTO Milestones VALUES (?,?,?,?,?,?)",
-            (iid, title, base, forecast, actual, 1))
+        con.execute("INSERT INTO Milestones VALUES (?,?,?,?,?,?,?)",
+            (iid, title, base, forecast, actual, 1, "manual"))
 
     # ---- Intake requests ----
     for (title, requester, unit, contributing, pri, effort, cost, tier,
@@ -456,7 +462,20 @@ def main():
     con.executemany("INSERT INTO Capabilities VALUES (?,?,?,?,?,?,?,?,?,?,?)",
         [c + ("demo-seed",) for c in caps])
 
-    # Business-day calendar from the Phase 1 generated table (task 2.11)
+    # Data-needs catalog (add-data-source-reconciliation) - seeds first;
+    # the holiday flip below overrides DN-019 after seeding
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from demo.data_catalog import seed_catalog
+    seed_catalog(con)
+
+    # Confirmed GT holiday calendar (P3 first increment): regenerate the
+    # business-days CSV from the steward-confirmed source BEFORE the DB loads it,
+    # and flip DN-019 AFTER the catalog seed (INSERT OR REPLACE would overwrite)
+    import demo.load_holidays as _lh
+    _lh.apply_confirmed_holidays(con)
+
+    # Business-day calendar (regenerated above from the confirmed source)
     cal_path = ROOT / "sharepoint" / "lists" / "business-days.csv"
     if cal_path.exists():
         for r in load_csv(cal_path):
@@ -471,11 +490,56 @@ def main():
                 (d.isoformat(), 1 if d.weekday() < 5 else 0, 0, 0, 0, 0))
             d += dt.timedelta(days=1)
 
-    # Data-needs catalog (add-data-source-reconciliation)
-    import sys
-    sys.path.insert(0, str(ROOT))
-    from demo.data_catalog import seed_catalog
-    seed_catalog(con)
+    # ---- Phase 2 demo data (add-execution-and-resource-management) ----
+    # Sync-enabled Tier 1 items (a few of the seeded T1 projects carry plan links)
+    for iid in ("CLL-26-0002", "CLL-26-0003", "CLL-26-0008"):
+        con.execute("UPDATE WorkItems SET SyncEnabled=1, LastSyncOn='2026-09-18',"
+                    " PlanUrl=? WHERE ItemId=?",
+                    (f"https://planner.gatech.edu/plans/{iid}", iid))
+
+    # Unit capacity declarations (denominators) for three months
+    cap_rows = [
+        ("DEAN", "2026-07-31", 3.0), ("GTPE", "2026-07-31", 6.0), ("GTLI", "2026-07-31", 4.0),
+        ("CEISMC", "2026-07-31", 5.0), ("SAV", "2026-07-31", 2.0),
+        ("DEAN", "2026-08-31", 3.0), ("GTPE", "2026-08-31", 6.0), ("GTLI", "2026-08-31", 4.0),
+        ("CEISMC", "2026-08-31", 5.0), ("SAV", "2026-08-31", 2.0),
+        ("DEAN", "2026-09-30", 3.0), ("GTPE", "2026-09-30", 5.0), ("GTLI", "2026-09-30", 4.0),
+        ("CEISMC", "2026-09-30", 5.0), ("SAV", "2026-09-30", 2.0),
+    ]
+    con.executemany("INSERT OR REPLACE INTO UnitCapacity VALUES (?,?,?,?)",
+                    [(u, p, f, "unit head") for u, p, f in cap_rows])
+
+    # Allocations per item per period (granularity: role-level until the Dean answers Q2)
+    alloc_rows = [
+        # July
+        ("2026-07-31", "CLL-26-0002", "DEAN", "Analyst", 1.2),
+        ("2026-07-31", "CLL-26-0004", "GTLI", "Program Admin", 0.8),
+        ("2026-07-31", "CLL-26-0005", "DEAN", "Faculty Lead", 1.5),
+        ("2026-07-31", "CLL-26-0011", "GTPE", "Program Admin", 2.5),
+        ("2026-07-31", "CLL-26-0012", "GTLI", "Instructor", 1.5),
+        ("2026-07-31", "CLL-26-0018", "CEISMC", "Coordinator", 3.0),
+        # August — GTPE goes over (6.0 available, 6.5 committed)
+        ("2026-08-31", "CLL-26-0002", "DEAN", "Analyst", 1.0),
+        ("2026-08-31", "CLL-26-0002", "GTPE", "Analyst", 0.5),  # cross-unit driver (GTPE contributes to this DEAN-led item)
+        ("2026-08-31", "CLL-26-0005", "DEAN", "Faculty Lead", 1.4),
+        ("2026-08-31", "CLL-26-0011", "GTPE", "Program Admin", 3.5),
+        ("2026-08-31", "CLL-26-0014", "GTPE", "Program Admin", 2.5),
+        ("2026-08-31", "CLL-26-0012", "GTLI", "Instructor", 1.2),
+        ("2026-08-31", "CLL-26-0016", "GTLI", "Coordinator", 1.0),
+        # September — quiet SAV (unallocated), others mid
+        ("2026-09-30", "CLL-26-0002", "DEAN", "Analyst", 0.9),
+        ("2026-09-30", "CLL-26-0008", "DEAN", "Faculty Lead", 1.8),
+        ("2026-09-30", "CLL-26-0011", "GTPE", "Program Admin", 2.0),
+        ("2026-09-30", "CLL-26-0014", "GTPE", "Program Admin", 1.0),
+        ("2026-09-30", "CLL-26-0012", "GTLI", "Instructor", 1.5),
+        ("2026-09-30", "CLL-26-0018", "CEISMC", "Coordinator", 2.0),
+    ]
+    con.executemany(
+        "INSERT INTO Allocations (Period, ItemId, UnitId, Granularity, Target, Percent,"
+        " AllocatedBy, AllocatedOn, ReviewedOn) VALUES (?,?,?,?,?,?,?,?,?)",
+        [(p, i, u, "role", t, round(pct * 100, 1), "unit head", "2026-09-01",
+          "2026-09-15" if p < "2026-09" else None) for p, i, u, t, pct in alloc_rows])
+    # Percent stores share of ONE full-time contribution: 1.2 FTE = 120
 
     con.commit()
     counts = {t: con.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in

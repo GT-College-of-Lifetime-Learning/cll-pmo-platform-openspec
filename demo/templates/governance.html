@@ -32,6 +32,20 @@
 {% endif %}
 </section>
 
+{% if over_allocs %}
+<section aria-label="Over-allocations">
+<h2>Over-allocated units this period (cross-unit risk)</h2>
+{% for o in over_allocs %}
+<div class="flash alert">
+  <strong>{{ o.unit }}</strong> — committed {{ o.committed }} of {{ o.available }} FTE.
+  {% if o.cross_unit %}Cross-unit items driving it:
+    {% for x in o.cross_unit %}<a href="/item/{{ x['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">{{ x['ItemId'] }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+  {% endif %}
+</div>
+{% endfor %}
+</section>
+{% endif %}
+
 <section aria-label="Needs attention">
 <h2>Needs attention — recurring findings (3+ occurrences)</h2>
 <div class="tablewrap">

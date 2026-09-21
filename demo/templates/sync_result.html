@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Sync result{% endblock %}
+{% block content %}
+<h1>Execution sync run</h1>
+<p class="lede">One-way: plan → registry. The registry remains the system of record;
+sync failures feed the finding tracker (2/3/4 ladder applies).</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Item</th><th>Sync result</th></tr></thead>
+  <tbody>
+  {% for item_id, status in results %}
+    <tr><td><a href="/item/{{ item_id }}?as={{ request.query_params.get('as','executive') }}">{{ item_id }}</a></td>
+        <td>{% if status == 'live' %}<span class="badge b-green">synced (live)</span>
+            {% elif status == 'failed' %}<span class="badge b-red">failed — finding recorded</span>
+            {% else %}<span class="badge">{{ status }}</span>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="2" class="empty">No sync-enabled items</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

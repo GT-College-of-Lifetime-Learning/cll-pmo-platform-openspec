@@ -1,0 +1,20 @@
+{
+  "plan_id": "CLL-26-0002",
+  "plan_url": "https://planner.gatech.edu/plans/CLL-26-0002",
+  "synced_at": "2026-09-18T08:30:00",
+  "percent_complete": 64,
+  "milestones": [
+    {
+      "title": "Data pipeline v1 (past)",
+      "baseline": "2026-07-31",
+      "forecast": "2026-07-28",
+      "actual": "2026-07-28"
+    },
+    {
+      "title": "Learner Analytics MVP live",
+      "baseline": "2026-09-30",
+      "forecast": "2026-10-15",
+      "actual": null
+    }
+  ]
+}

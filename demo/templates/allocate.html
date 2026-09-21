@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Allocate · {{ unit['Name'] }}{% endblock %}
+{% block pagecss %}
+form.alloc { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+              padding:1.25rem 1.4rem; box-shadow:var(--shadow); max-width:720px; }
+form.alloc .field { display:flex; flex-direction:column; gap:.25rem; margin-bottom:.9rem; }
+form.alloc .field-row { display:flex; gap:.9rem; flex-wrap:wrap; }
+form.alloc .field-row .field { flex:1; min-width:160px; }
+.over-note { background:var(--red-bg); border:1px solid var(--red); border-left:5px solid var(--red);
+             border-radius:var(--radius-sm); padding:.7rem 1rem; margin:.6rem 0; }
+.existing td { padding:.4rem .6rem; }
+{% endblock %}
+{% block content %}
+<h1>Allocations — {{ unit['Name'] }} · {{ period }}</h1>
+<p class="lede">Unit-head allocation entry. Granularity is <strong>{{ granularity }}-level</strong>
+(policy enforced at the query layer). Recording an over-allocation stores it and warns —
+visibility, not prevention. Reviewed allocations stay current; unreviewed go stale after the cycle.</p>
+
+{% if over %}
+<div class="over-note" role="alert">
+  <strong>Over-allocated:</strong> this unit is now committed beyond its declared capacity.
+  The over-allocation is visible on the capacity heatmap and to governance if cross-unit items drive it.
+</div>
+{% endif %}
+
+<div class="flash">
+  This period: committed <strong>{{ committed }} FTE</strong> against
+  <strong>{{ available if available is not none else 'undeclared' }} FTE</strong> available
+  {% if available %}({{ ((committed / available) * 100) | round(0) | int }}% utilization){% endif %}.
+</div>
+
+<form class="alloc" method="post" action="/allocate/{{ unit['UnitId'] }}/submit?as={{ request.query_params.get('as','executive') }}">
+  <div class="field"><label for="item_id">Item</label>
+    <select id="item_id" name="item_id" required>
+      {% for i in items %}<option value="{{ i['ItemId'] }}">{{ i['ItemId'] }} — {{ i['Title'][:50] }}</option>{% endfor %}
+    </select></div>
+  <div class="field-row">
+    <div class="field"><label for="target">Allocation target ({{ granularity }})</label>
+      <input id="target" name="target" required placeholder="e.g. Program Admin"></div>
+    <div class="field"><label for="percent">Percent of one full-time contribution</label>
+      <input id="percent" name="percent" type="number" min="0" max="100" step="5" required></div>
+  </div>
+  <button type="submit">Record allocation</button>
+</form>
+
+<h2>Existing allocations this period</h2>
+<div class="tablewrap">
+<table class="existing">
+  <thead><tr><th>Item</th><th>Target</th><th>Percent</th><th>Allocated by</th><th>Reviewed</th></tr></thead>
+  <tbody>
+  {% for a in existing %}
+    <tr><td><a href="/item/{{ a['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">{{ a['ItemId'] }}</a></td>
+        <td>{{ a['Target'] }}</td><td>{{ a['Percent'] | round(0) | int }}%</td>
+        <td class="small">{{ a['AllocatedBy'] }}</td>
+        <td class="small {% if not a['ReviewedOn'] %}muted{% endif %}">{{ a['ReviewedOn'] or 'unreviewed (goes stale)' }}</td></tr>
+  {% else %}<tr><td colspan="5" class="empty">No allocations yet this period</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="small muted"><a href="/capacity?as={{ request.query_params.get('as','executive') }}">Back to the capacity heatmap →</a></p>
+{% endblock %}

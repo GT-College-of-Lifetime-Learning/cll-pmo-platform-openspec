@@ -275,11 +275,19 @@ def register_flow_routes(app: FastAPI):
     def status_form(request: Request, item_id: str):
         con = db()
         item = con.execute("SELECT * FROM WorkItems WHERE ItemId=?", (item_id,)).fetchone()
+        prefill = None
+        if item is not None and item["SyncEnabled"]:
+            import demo.sync_engine as sync_engine
+            plan = sync_engine.load_plan(item_id)
+            if plan:
+                prefill = {"percent_complete": plan.get("percent_complete"),
+                           "source": "plan sync (one-way)"}
         con.close()
         if item is None:
             return HTMLResponse("<h3>Item not found</h3>", status_code=404)
         return templates.TemplateResponse(request, "status_form.html", {
             "request": request, "role": _role(request), "item": dict(item),
+            "prefill": prefill,
         })
 
     @app.post("/update/{item_id}/submit")

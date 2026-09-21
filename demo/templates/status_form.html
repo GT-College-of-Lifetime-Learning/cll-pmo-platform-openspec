@@ -22,6 +22,13 @@ form.status input, form.status textarea, form.status select { width:100%; }
 <p class="lede">Pre-filled from your reminder link. Target: ≤ 15 minutes. Updates are append-only history.</p>
 
 {% if error %}<div class="error-note" role="alert"><strong>{{ error }}</strong></div>{% endif %}
+{% if prefill %}
+<div class="flash">
+  <span class="badge b-navy">Plan-synced draft</span>
+  Percent complete arrives pre-populated at <strong>{{ prefill.percent_complete }}%</strong>
+  from the plan sync — edit anything before confirming; confirmation counts as this period's update.
+</div>
+{% endif %}
 
 <form class="status" method="post" action="/update/{{ item['ItemId'] }}/submit?as={{ request.query_params.get('as','executive') }}">
   <div class="field-row">
@@ -52,7 +59,8 @@ form.status input, form.status textarea, form.status select { width:100%; }
     <div class="field"><label for="next_milestone_date">Milestone date</label>
       <input id="next_milestone_date" name="next_milestone_date" type="date"></div>
     <div class="field"><label for="pct">Percent complete</label>
-      <input id="pct" name="pct" type="number" min="0" max="100" value="0"></div>
+      <input id="pct" name="pct" type="number" min="0" max="100"
+             value="{{ prefill.percent_complete if prefill else 0 }}"></div>
   </div>
 
   <div class="field check"><input type="checkbox" name="decision_needed" id="decision_needed" value="on">

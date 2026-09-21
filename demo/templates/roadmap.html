@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Roadmap{% endblock %}
+{% block pagecss %}
+.timeline-rows { display:flex; flex-direction:column; gap:.55rem; }
+.trow { display:grid; grid-template-columns:110px 1fr; gap:1rem; align-items:center;
+        background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+        padding:.55rem .9rem; box-shadow:var(--shadow); }
+.trow .id { font-size:.72rem; font-weight:800; color:var(--faint); }
+.trow .id strong { display:block; color:var(--ink); font-size:.85rem; }
+.bar-track { position:relative; height:22px; background:var(--grey-bg); border-radius:6px; }
+.bar-seg { position:absolute; height:22px; border-radius:6px; opacity:.9; }
+.bar-lbl { position:absolute; font-size:.7rem; font-weight:700; color:var(--ink);
+           top:2px; left:.5rem; }
+.trow .meta { font-size:.72rem; color:var(--muted); }
+{% endblock %}
+{% block content %}
+<h1>Roadmap</h1>
+<p class="lede">Programs and portfolios on a timeline, read from registry data —
+the registry plus dashboards remain authoritative; this view is for portfolio leads.
+Window shown: 2026-04 through 2027-12.</p>
+
+{% set W0 = "2026-04-01" %}
+{% set W1 = "2027-12-31" %}
+
+<div class="timeline-rows">
+{% for i in items %}
+  {% set start = i['StartDate'] or W0 %}
+  {% set end = i['TargetEndDate'] or W1 %}
+  {% set s_off = ((start | trim | replace('-', '') | int) - 20260401) / 100.0 %}
+  <div class="trow">
+    <div class="id">{{ i['ItemId'] }}<strong>{{ i['Title'][:38] }}</strong>
+      <span class="meta">T{{ i['Tier'] }} · {{ i['LeadUnitId'] }} · {{ i['Stage'] }}{% if i['SyncEnabled'] %} · synced{% endif %}</span>
+    </div>
+    <div class="bar-track" role="img"
+         aria-label="{{ i['ItemId'] }}: {{ i['Stage'] }}, {{ start }} to {{ end }}">
+      <div class="bar-seg" style="left: {{ [((start | replace('-','') | int - 20260401) / (20271231 - 20260401) * 100), 0] | max }}%;
+           width: {{ [((end | replace('-','') | int) - (start | replace('-','') | int)) / (20271231 - 20260401) * 100, 2] | max }}%;
+           background: var(--{{ 'green' if i['Stage'] == 'Active' else 'amber' if i['Stage'] == 'On Hold' else 'grey-ink' }});"></div>
+      <span class="bar-lbl">{{ start[:7] }} → {{ end[:7] }}</span>
+    </div>
+  </div>
+{% else %}
+<div class="empty">No active programs or projects</div>
+{% endfor %}
+</div>
+<p class="small muted" style="margin-top:1rem">Select an item ID anywhere in the app for its full registry detail.</p>
+{% endblock %}

@@ -88,6 +88,32 @@ form.stageform .row { display:flex; flex-wrap:wrap; gap:.6rem; align-items:cente
   </div>
 </section>
 
+{% if sync_ctx.sync_enabled %}
+<section aria-label="Execution sync">
+<h2>Execution sync</h2>
+<div class="flash">
+  <span class="badge b-{{ 'green' if sync_ctx.sync_state == 'live' else 'red' if sync_ctx.sync_state == 'failed' else 'amber' }}">{{ sync_ctx.sync_state }}</span>
+  Plan: <a href="{{ sync_ctx.plan_url }}">{{ sync_ctx.plan_url }}</a>
+  · last successful sync: <strong>{{ sync_ctx.last_sync or 'never (failed)' }}</strong>
+  {% if sync_ctx.schedule_risk %}
+  <br>Schedule risk (derived): {{ sync_ctx.schedule_risk.text }}
+  {% endif %}
+</div>
+{% if draft %}
+<div class="flash">
+  {% if draft.confirmed %}
+    This period's update is confirmed (plan-synced draft, source: {{ draft.source }}).
+  {% else %}
+    <strong>Draft ready:</strong> this period's update arrives pre-populated from the plan
+    (percent complete: <strong>{{ draft.percent_complete }}%</strong>, source: {{ draft.source }}).
+    <a class="badge b-navy" style="margin-left:.5rem" href="/update/{{ item['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">Review and confirm the draft</a>
+    — confirmation counts as the period's update; unconfirmed drafts do not.
+  {% endif %}
+</div>
+{% endif %}
+</section>
+{% endif %}
+
 <section aria-label="Lead actions" id="stage">
 <h2>Lead actions</h2>
 <p><a class="badge b-navy" style="padding:.45rem 1rem" href="/update/{{ item['ItemId'] }}?as={{ request.query_params.get('as','executive') }}">Submit status update (F4)</a></p>

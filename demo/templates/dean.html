@@ -70,6 +70,17 @@
 </div>
 </section>
 
+{% if over_allocated_units %}
+<section aria-label="Capacity">
+<h2>Capacity — over-allocated units</h2>
+<div class="flash alert">
+  These units are committed beyond declared capacity this period:
+  {% for u in over_allocated_units %}<strong>{{ u }}</strong>{% if not loop.last %} · {% endif %}{% endfor %}
+  <a class="small" href="/capacity?as={{ request.query_params.get('as','executive') }}">See the capacity heatmap →</a>
+</div>
+</section>
+{% endif %}
+
 <section aria-label="Portfolio indicators">
 <h2>Portfolio indicators</h2>
 <div class="stat-row">

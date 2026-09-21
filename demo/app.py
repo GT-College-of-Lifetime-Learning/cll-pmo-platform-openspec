@@ -34,6 +34,9 @@ app = FastAPI(title="CLL-SPM Demo")
 from demo.flows import register_flow_routes  # noqa: E402
 register_flow_routes(app)
 
+from demo.phase2_routes import register_phase2_routes  # noqa: E402
+register_phase2_routes(app)
+
 # Trust banner (cycle-readiness spec): every page shows the readiness summary.
 # Computed per render via a Jinja global so no route has to thread it through.
 import demo.readiness as _readiness  # noqa: E402
@@ -414,6 +417,16 @@ def dean_overview(request: Request):
                    if (i["AlignmentCategory"] or "Operational") == cat)
     tot_eff = effort("Strategic") + effort("Operational") + effort("Compliance") or 1
 
+    # Phase 2: capacity summary for the overview (over-allocated units this period)
+    import demo.capacity as _capacity
+    _units = [u["UnitId"] for u in priorities and con.execute(
+        "SELECT UnitId FROM Units WHERE UnitActive=1").fetchall()]
+    over_allocated_units = []
+    for u in _units:
+        _c, _a, _s, _st = _capacity.utilization(con, u, "2026-09-30")
+        if _s == "over-allocated":
+            over_allocated_units.append(u)
+
     con.close()
     return templates.TemplateResponse(request, "dean.html", {
         "request": request, "role": r,
@@ -428,6 +441,7 @@ def dean_overview(request: Request):
         "effort_strategic_pct": 100 * effort("Strategic") // tot_eff,
         "effort_operational_pct": 100 * effort("Operational") // tot_eff,
         "effort_compliance_pct": 100 * effort("Compliance") // tot_eff,
+        "over_allocated_units": over_allocated_units,
         "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
     })
 
@@ -449,6 +463,9 @@ def governance(request: Request):
     # finding-tracker: governance sees findings escalated to 3+ occurrences
     from demo.findings import open_findings
     escalated_findings = [dict(f) for f in open_findings(con, min_occurrences=3)]
+    # Phase 2: cross-unit over-allocations surface in governance (needs attention)
+    import demo.capacity as capacity
+    over_allocs = capacity.cross_unit_overallocations(con, "2026-09-30")
     con.close()
     return templates.TemplateResponse(request, "governance.html", {
         "request": request, "role": role(request),
@@ -456,6 +473,7 @@ def governance(request: Request):
         "tier2": [dict(t) for t in tier2],
         "decisions": [dict(d) for d in decisions],
         "escalated_findings": escalated_findings,
+        "over_allocs": over_allocs,
         "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
     })
 
@@ -521,6 +539,20 @@ def item_detail(request: Request, item_id: str):
     decisions = con.execute(
         "SELECT * FROM Decisions WHERE SubjectId = ?", (item_id,)).fetchall()
     unit = con.execute("SELECT Name FROM Units WHERE UnitId = ?", (item["LeadUnitId"],)).fetchone()
+    # Phase 2: sync state + schedule risk on Tier 1 detail (task 2.3)
+    from demo.phase2_routes import item_sync_context
+    sync_ctx = item_sync_context(con, item_id)
+    # Phase 2: draft flow - synced item's period update arrives pre-populated (task 2.2)
+    draft = None
+    if sync_ctx.get("sync_enabled"):
+        from demo.sync_engine import load_plan
+        plan = load_plan(item_id)
+        if plan:
+            draft = {"percent_complete": plan.get("percent_complete"),
+                     "source": "plan sync (last %s)" % sync_ctx.get("last_sync"),
+                     "confirmed": bool(con.execute(
+                         "SELECT COUNT(*) FROM StatusUpdates WHERE ItemId=? AND PeriodEnd='2026-09-30'",
+                         (item_id,)).fetchone()[0])}
     con.close()
     return templates.TemplateResponse(request, "item.html", {
         "request": request, "role": r,
@@ -528,6 +560,7 @@ def item_detail(request: Request, item_id: str):
         "history": [dict(h) for h in history],
         "milestones": [dict(m) for m in milestones],
         "decisions": [dict(d) for d in decisions],
+        "sync_ctx": sync_ctx, "draft": draft,
     })
 
 @app.get("/priority/{pid}", response_class=HTMLResponse)

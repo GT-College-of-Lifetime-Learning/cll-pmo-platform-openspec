@@ -171,6 +171,8 @@
     <a href="/governance?as={{ request.query_params.get('as','executive') }}">Governance</a>
     <a href="/readiness?as={{ request.query_params.get('as','executive') }}">Readiness</a>
     <a href="/coverage?as={{ request.query_params.get('as','executive') }}">Coverage</a>
+    <a href="/capacity?as={{ request.query_params.get('as','executive') }}">Capacity</a>
+    <a href="/roadmap?as={{ request.query_params.get('as','executive') }}">Roadmap</a>
     <a href="/intake?as={{ request.query_params.get('as','executive') }}">Intake</a>
     {% if role %}
       {% if role['kind'] == 'Unit' %}
@@ -181,6 +183,9 @@
     {% endif %}
     <form method="post" action="/admin/hygiene" style="display:inline">
       <button type="submit" class="secondary" style="padding:.42rem .7rem;font-size:.85rem;font-weight:500">Run F7 hygiene</button>
+    </form>
+    <form method="post" action="/admin/sync" style="display:inline">
+      <button type="submit" class="secondary" style="padding:.42rem .7rem;font-size:.85rem;font-weight:500">Run sync</button>
     </form>
   </nav>
 </header>

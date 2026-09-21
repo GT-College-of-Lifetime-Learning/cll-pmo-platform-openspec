@@ -1,0 +1,14 @@
+{
+  "plan_id": "CLL-26-0008",
+  "plan_url": "https://planner.gatech.edu/plans/CLL-26-0008",
+  "synced_at": "2026-09-18T08:30:00",
+  "percent_complete": 100,
+  "milestones": [
+    {
+      "title": "Fellows cohort announced",
+      "baseline": "2026-11-01",
+      "forecast": "2026-11-10",
+      "actual": null
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "plan_id": "CLL-26-0003",
+  "plan_url": "https://planner.gatech.edu/plans/CLL-26-0003",
+  "synced_at": "2026-09-18T08:30:00",
+  "percent_complete": 41,
+  "milestones": [
+    {
+      "title": "Hub partner MOU signed",
+      "baseline": "2026-10-01",
+      "forecast": "2026-10-20",
+      "actual": null
+    }
+  ]
+}

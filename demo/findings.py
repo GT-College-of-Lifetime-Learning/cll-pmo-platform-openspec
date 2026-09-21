@@ -11,7 +11,7 @@ from datetime import date
 TODAY = date(2026, 9, 19)
 
 FINDING_TYPES = ("stale-update", "red-without-resolution", "unaligned-item",
-                 "triage-overdue", "decision-overdue")
+                 "triage-overdue", "decision-overdue", "sync-failed")
 
 LADDER = {2: "Recurring", 3: "Escalated", 4: "Blocks closeout"}
 

@@ -53,6 +53,17 @@ def regenerate_business_days(holidays):
             d += dt.timedelta(days=1)
 
 
+def apply_confirmed_holidays(con):
+    """Deterministic-build path: read the committed gt-holidays.csv and regenerate
+    business days + flip DN-019 inside an existing open DB connection (no rebuild)."""
+    holidays = read_confirmed()
+    regenerate_business_days(holidays)
+    con.execute("UPDATE DataNeeds SET SourceState='HAVE', SourceSystem='steward-confirmed calendar',"
+                " SourceFormat='gt-holidays.csv', SourceRefresh='annual', Steward='Strategic Operations',"
+                " Notes='confirmed calendar imported (deterministic build)' WHERE NeedId='DN-019'")
+    return len(holidays)
+
+
 def run(today=None):
     holidays = read_confirmed()
     regenerate_business_days(holidays)

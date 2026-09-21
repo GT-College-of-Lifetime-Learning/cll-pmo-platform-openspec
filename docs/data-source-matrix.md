@@ -56,7 +56,7 @@ imports it tagged → coverage reflects it. UNDEFINED rows route to the sponsor 
 
 | Need | Element | Cadence | Definition | State | System | Steward | Notes |
 |---|---|---|---|---|---|---|---|
-| DN-019 | Institute holiday calendar | Annual | defined | **HAVE** | steward-confirmed calendar | Strategic Operations | confirmed calendar imported 2026-09-19 |
+| DN-019 | Institute holiday calendar | Annual | defined | **HAVE** | steward-confirmed calendar | Strategic Operations | confirmed calendar imported (deterministic build) |
 
 ## Strategy 2035 / Goal 1
 

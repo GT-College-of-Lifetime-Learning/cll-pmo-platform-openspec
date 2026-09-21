@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Capacity{% endblock %}
+{% block pagecss %}
+.heat-table td.cell { text-align:center; font-weight:700; padding:.65rem .5rem; border:1px solid var(--line); }
+.cell .pct { font-size:1.05rem; }
+.cell .lbl { font-size:.68rem; font-weight:600; text-transform:uppercase; letter-spacing:.4px; display:block; }
+.cell .sub { font-size:.7rem; color:var(--muted); font-weight:500; }
+.cell.st-unallocated { background:var(--grey-bg); color:var(--grey-ink); }
+.cell.st-allocated { background:var(--green-bg); color:var(--green); }
+.cell.st-atcapacity { background:var(--amber-bg); color:var(--amber); }
+.cell.st-overallocated { background:var(--red-bg); color:var(--red); }
+.stale-mark { font-style:italic; }
+{% endblock %}
+{% block content %}
+<h1>Capacity heatmap</h1>
+<p class="lede">Committed vs available per unit per period — utilization states carry text
+labels, never color alone. Over-allocation is visible, never prevented. Granularity is
+role-level until the Dean decides (Q2).</p>
+
+{% if over_units %}
+<div class="flash alert" role="alert">
+  <span class="badge b-red">Over-allocated this period</span>
+  {% for u in over_units %}<strong>{{ u['UnitId'] }}</strong>{% if not loop.last %} · {% endif %}{% endfor %}
+  — see the heatmap below; governance sees any cross-unit drivers.
+</div>
+{% endif %}
+
+<section aria-label="Heatmap">
+<div class="tablewrap">
+<table class="heat-table">
+  <thead><tr><th style="text-align:left">Unit</th>
+    {% for p in periods %}<th>{{ p }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for u in units %}
+    <tr>
+      <td><a href="/allocate/{{ u['UnitId'] }}?as={{ request.query_params.get('as','executive') }}">{{ u['UnitId'] }}</a>
+          <span class="small muted">{{ u['Name'] }}</span></td>
+      {% for p in periods %}
+        {% set c = grid[(u['UnitId'], p)] %}
+        <td class="cell st-{{ c.state | replace(' ', '') }}">
+          {% if c.state == 'unallocated' %}
+            <span class="pct">—</span><span class="lbl">unallocated</span>
+          {% else %}
+            <span class="pct">{{ c.pct | round(0) | int }}%</span>
+            <span class="lbl">{{ c.state }}</span>
+            <span class="sub">{{ c.committed }} of {{ c.available }} FTE{% if c.stale %} · <em class="stale-mark">stale</em>{% endif %}</span>
+          {% endif %}
+        </td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+</section>
+
+{% if cross %}
+<section aria-label="Cross-unit over-allocations">
+<h2>Over-allocated with cross-unit drivers (governance attention)</h2>
+{% for c in cross %}
+<div class="flash alert">
+  <strong>{{ c.unit }}</strong> — committed {{ c.committed }} of {{ c.available }} FTE.
+  {% for d in c.driving[:4] %}
+    <span class="badge b-red">{{ d.ItemId }} {{ d.Percent | round(0) | int }}%</span>
+  {% endfor %}
+  {% if c.cross_unit %}<br><span class="small">cross-unit items driving this:
+    {% for x in c.cross_unit %}{{ x.ItemId }}{% if not loop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+</div>
+{% endfor %}
+</section>
+{% endif %}
+{% endblock %}
