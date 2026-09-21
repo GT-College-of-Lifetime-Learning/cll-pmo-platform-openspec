@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Cycle readiness{% endblock %}
+{% block pagecss %}
+.gate { display:flex; gap:1rem; align-items:flex-start; background:var(--surface);
+        border:1px solid var(--line); border-left:5px solid var(--grey-bg);
+        border-radius:var(--radius); padding:.9rem 1.1rem; box-shadow:var(--shadow); }
+.gate.blocking { border-left-color:var(--red); }
+.gate.warn { border-left-color:var(--amber); }
+.gate.ok { border-left-color:var(--green); }
+.gate .state { flex:0 0 auto; }
+.gate h3 { margin:0 0 .15rem; }
+.gate .sub { color:var(--muted); font-size:.8rem; }
+.gate .val { font-size:.88rem; color:var(--ink); margin-top:.15rem; font-weight:600; }
+.summary-banner { display:flex; align-items:center; gap:.8rem; padding:1rem 1.2rem;
+                  border-radius:var(--radius); margin-bottom:1.25rem; font-weight:700;
+                  border:1px solid var(--line); background:var(--surface); box-shadow:var(--shadow); }
+.summary-banner.all-ok { border-left:6px solid var(--green); }
+.summary-banner.degraded { border-left:6px solid var(--red); background:var(--red-bg); }
+.summary-banner.warned { border-left:6px solid var(--amber); background:var(--amber-bg); }
+{% endblock %}
+{% block content %}
+<h1>Cycle readiness</h1>
+<p class="lede">"Can we trust this cycle's dashboard?" — every gate re-evaluated from live data at each view.
+Blockers are listed first; this page renders when failing, by design.</p>
+
+<div class="summary-banner {{ 'all-ok' if not has_blocking and not has_warn else 'degraded' if has_blocking else 'warned' }}">
+  {% if has_blocking %}
+    <span class="badge b-red">BLOCKING</span> This cycle is not ready to consume — {{ gates | selectattr('state','equalto','BLOCKING') | list | length }} blocking gate(s). Dashboards are labeled degraded.
+  {% elif has_warn %}
+    <span class="badge b-amber">WARN</span> Ready with warnings — {{ gates | selectattr('state','equalto','WARN') | list | length }} gate(s) need attention.
+  {% else %}
+    <span class="badge b-green">READY</span> All gates OK — the cycle's data is trustworthy.
+  {% endif %}
+</div>
+
+<section aria-label="Gates">
+{% for g in gates %}
+<div class="gate {{ 'blocking' if g.state == 'BLOCKING' else 'warn' if g.state == 'WARN' else 'ok' }}">
+  <span class="state badge b-{{ 'red' if g.state == 'BLOCKING' else 'amber' if g.state == 'WARN' else 'green' }}">{{ g.state }}</span>
+  <div>
+    <h3>{{ g.name }}</h3>
+    <div class="sub">{{ g.detail }}</div>
+    <div class="val">{{ g.text }}</div>
+  </div>
+</div>
+{% endfor %}
+</section>
+
+<p class="small muted" style="margin-top:1.25rem">Gates are computed queries over the live data — never a stored
+flag that could go stale. Thresholds are published and calibrated by Strategic Operations.</p>
+{% endblock %}

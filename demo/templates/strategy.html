@@ -121,6 +121,9 @@
       <span class="trajl">{{ g.pace_label }}</span>
       <span class="fainttx">· {{ g.pct }}% of target</span>
     </div>
+    {% if g.source_note %}
+    <div class="prov-row small muted">source: {{ g.source_note }} · as of {{ g.as_of }} · by {{ g.submitter }}</div>
+    {% endif %}
   {% endif %}
 
   {% if g.secondary %}

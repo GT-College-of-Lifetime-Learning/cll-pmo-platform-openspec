@@ -9,16 +9,17 @@
 <h2>KPIs</h2>
 <div class="tablewrap">
 <table>
-  <thead><tr><th>KPI</th><th>Name</th><th>Role</th><th>Basis</th><th>Target</th><th>Frequency</th></tr></thead>
+  <thead><tr><th>KPI</th><th>Name</th><th>Role</th><th>Basis</th><th>Target</th><th>Latest</th><th>Provenance</th></tr></thead>
   <tbody>
   {% for k in kpis %}
     <tr>
       <td>{{ k['KpiId'] }}</td>
-      <td>{{ k['KpiName'] }}</td>
+      <td>{{ k['KpiName'] }}<span class="sub">{{ k['Frequency'] }}</span></td>
       <td>{% if k['DashboardRole'] %}<span class="badge b-navy">{{ k['DashboardRole'] }}</span>{% else %}—{% endif %}</td>
       <td>{{ k['Basis'] or '—' }}</td>
       <td>{{ k['Target'] or 'Baseline pending' }}</td>
-      <td>{{ k['Frequency'] }}</td>
+      <td>{% if k['LatestValue'] is not none %}{{ k['LatestValue'] }}{% else %}<span class="badge b-pend">Pending source</span>{% endif %}</td>
+      <td class="small">{% if k['SourceNote'] %}{{ k['SourceNote'] }}<span class="sub">as of {{ k['AsOf'] }} · by {{ k['Submitter'] }}</span>{% elif k['KpiOwner'] %}Owner: {{ k['KpiOwner'] }}{% else %}—{% endif %}</td>
     </tr>
   {% endfor %}
   </tbody>

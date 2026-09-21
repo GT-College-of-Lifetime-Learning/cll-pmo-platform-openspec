@@ -14,6 +14,38 @@ executive dashboards on Microsoft 365. Source of truth for requirements:
 | `powerbi/` | Power BI Project (PBIP) — semantic model + report (TMDL) |
 | `docs/` | RAG definitions, scoring rubric, tier criteria, lead playbook, templates |
 
+## Demo (local, no M365 dependency)
+
+`demo/` is a complete local implementation of the specced behavior — the flow
+engine (F1/F2/F4/F7, gates, call-up), the Strategy 2035 landing page, and the
+trust features — used for demos and as the reference for the M365 build.
+
+```
+python demo\build_db.py        # rebuild the deterministic demo DB
+uvicorn demo.app:app --reload  # http://127.0.0.1:8000/?as=executive
+```
+
+Pages: Strategy 2035 (landing) · Dean Overview · Governance · Readiness ·
+Intake · Unit · Item detail · Priority detail. Roles via `?as=executive` or
+`?as=unit:<UNITID>` (rolebar switches).
+
+Trust features (`add-trust-and-readiness-features`):
+
+| Demo module | Ports to M365 as |
+|---|---|
+| `demo/readiness.py` (computed gates) | Readiness flow / Power BI measures at refresh |
+| `demo/findings.py` (Findings table, 2/3/4 ladder) | SharePoint Findings list written by F7 |
+| `demo/export_feed.py` (feed + manifest) | The SharePoint lists are the feed; manifest = freshness stamps |
+| Provenance sub-labels on cards | Power BI tooltips on the same columns |
+
+Feed: `python demo\export_feed.py` writes `demo/output/feed/` (7 files +
+manifest); `/api/feed` serves it. Files are written even when empty (explicit
+no-data states) and CSVs are injection-guarded.
+
+Test battery: `demo\tests\` — routes (12), flows (18), visuals (12), timeline
+hand-check, planted-defect suite (30). Run after any change; planted defects
+must stay at 100% caught / 0 false alarms.
+
 ## Conventions
 
 - Every buildable artifact is source-controlled (PnP/CLI provisioning, Power Platform

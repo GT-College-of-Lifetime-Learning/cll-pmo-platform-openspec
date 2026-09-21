@@ -1,0 +1,13 @@
+{
+  "feed_version": 1,
+  "generated_at": "2026-09-21T09:36:12",
+  "source": "cll_spm.db (demo build)",
+  "files": {
+    "kpis.csv": 12,
+    "rag-counts.csv": 6,
+    "currency.csv": 1,
+    "intake-aging.csv": 6,
+    "readiness.json": 5,
+    "findings.json": 0
+  }
+}

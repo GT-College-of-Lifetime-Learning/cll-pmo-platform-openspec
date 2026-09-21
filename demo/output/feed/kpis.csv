@@ -1,0 +1,13 @@
+KpiId,KpiName,PriorityId,DashboardRole,Basis,Target,Frequency,LatestValue,AsOf,Submitter
+KPI-001,Learning-systems leaders credentialed or graduated (cumulative),,Headline,Cumulative,5000.0,Annual,990.0,2026-09-15,Institutional Research
+KPI-002,Degree levels with a launched field-defining program,,Detail,PointInTime,3.0,Annual,1.0,2026-09-15,Institutional Research
+KPI-003,Fortune 500 learning leaders holding a CLL credential,,Secondary,Cumulative,50.0,Annual,18.0,2026-09-15,Institutional Research
+KPI-004,Connected learning hubs,,Headline,PointInTime,200.0,Annual,61.0,2026-09-15,Institutional Research
+KPI-005,Incubated learning-tech start-ups with market adoption,,Secondary,Cumulative,25.0,Annual,8.0,2026-09-15,Institutional Research
+KPI-006,Learners engaged with GT-designed touchpoints (cumulative),,Headline,Cumulative,5000000.0,Quarterly,1810000.0,2026-09-15,Institutional Research
+KPI-007,Unique learners credentialed globally (cumulative),,Secondary,Cumulative,2000000.0,Quarterly,498000.0,2026-09-15,Institutional Research
+KPI-008,Georgia Tech 3-year graduation rate,,Detail,Annual,,Annual,72.4,2026-09-15,Institutional Research
+KPI-009,Annual content renewal rate,,Detail,Annual,35.0,Annual,31.0,2026-09-15,Institutional Research
+KPI-010,Annual external research expenditures,,Headline,Annual,20000000.0,Annual,4620000.0,2026-09-15,Institutional Research
+KPI-011,Strategic objectives with a live dashboard KPI,,Detail,PointInTime,100.0,Quarterly,22.0,2026-09-15,Institutional Research
+KPI-012,Digital Transformation Maturity Index,,Headline,Index,,Semiannual,2.7,2026-09-15,Strategic Operations

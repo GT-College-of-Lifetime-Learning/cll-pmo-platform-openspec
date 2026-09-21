@@ -16,11 +16,13 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+
+# Shared template environment with the app (single Jinja global registry —
+# trust_state etc. are registered once in app.py and apply to every page).
+from demo.app import templates
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "demo" / "cll_spm.db"
-templates = Jinja2Templates(directory=str(ROOT / "demo" / "templates"))
 
 TODAY = date(2026, 9, 19)
 
@@ -344,6 +346,16 @@ def register_flow_routes(app: FastAPI):
                 errors.append("TCC call-up pending — cannot become Active until the TCC decides")
         if stage == "Closed" and item["Tier"] == "1" and not closeout.strip():
             errors.append("closeout summary")
+        # finding-tracker spec: Open finding with 4+ occurrences blocks closeout
+        from demo.findings import closeout_blocked
+        if stage == "Closed" and closeout_blocked(con, item_id):
+            blocked = con.execute(
+                "SELECT Type, Occurrences FROM Findings WHERE AffectedItemId=?"
+                " AND Status='Open' AND Occurrences>=4 ORDER BY Occurrences DESC LIMIT 1",
+                (item_id,)).fetchone()
+            errors.append(
+                f"unresolved finding ({blocked['Type']}, {blocked['Occurrences']} occurrences) — "
+                "resolve it before closing")
 
         if errors:
             con.close()
@@ -358,11 +370,13 @@ def register_flow_routes(app: FastAPI):
         return RedirectResponse(f"/item/{item_id}?as={request.query_params.get('as','executive')}",
                                 status_code=303)
 
-    # ---------- F7 hygiene: close expired call-up windows ----------
+    # ---------- F7 hygiene: findings + close expired call-up windows ----------
 
     @app.post("/admin/hygiene")
     def hygiene_run(request: Request):
         con = db()
+        from demo.findings import run_hygiene_findings, open_findings
+        touched = run_hygiene_findings(con)
         closed = 0
         rows = con.execute(
             "SELECT DecisionId, Conditions FROM Decisions WHERE Decision LIKE '%call-up window open until%'").fetchall()
@@ -376,15 +390,18 @@ def register_flow_routes(app: FastAPI):
                 closed += 1
                 con.execute("UPDATE Decisions SET Conditions=REPLACE(?, 'open until', 'closed since') WHERE DecisionId=?",
                             (row["Conditions"], row["DecisionId"]))
-        # triage overdue + decision SLA notices (demo: just counts)
         triage_late = con.execute(
             "SELECT COUNT(*) FROM IntakeRequests WHERE Status='Submitted' AND JULIANDAY('2026-09-19')-JULIANDAY(SubmittedDate)>5").fetchone()[0]
+        escalated = open_findings(con, min_occurrences=2)
         con.commit()
         con.close()
-        return HTMLResponse(
-            f"<h3>F7 hygiene run</h3><p>Call-up windows closed: {closed}</p>"
-            f"<p>Requests in triage > 5 days: {triage_late} (owners notified)</p>"
-            f"<p><a href='/'>Back</a></p>")
+        return templates.TemplateResponse(request, "hygiene.html", {
+            "request": request, "role": _role(request),
+            "findings_touched": touched,
+            "callup_closed": closed,
+            "triage_late": triage_late,
+            "escalated": [dict(f) for f in escalated],
+        })
 
 def _role(request: Request):
     as_param = request.query_params.get("as", "executive")

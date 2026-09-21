@@ -34,6 +34,23 @@ app = FastAPI(title="CLL-SPM Demo")
 from demo.flows import register_flow_routes  # noqa: E402
 register_flow_routes(app)
 
+# Trust banner (cycle-readiness spec): every page shows the readiness summary.
+# Computed per render via a Jinja global so no route has to thread it through.
+import demo.readiness as _readiness  # noqa: E402
+
+def _trust_summary():
+    try:
+        _, has_blocking, has_warn = _readiness.evaluate()
+        if has_blocking:
+            return "degraded"
+        if has_warn:
+            return "warn"
+        return "ok"
+    except Exception:
+        return "unknown"
+
+templates.env.globals["trust_state"] = _trust_summary
+
 TODAY = date(2026, 9, 19)
 
 def db():
@@ -132,7 +149,8 @@ def strategy_2035(request: Request):
             if k is None:
                 return "Pending definition", None
             row = con.execute(
-                "SELECT Value, PeriodEnd FROM KpiValues WHERE KpiValueId=? ORDER BY PeriodEnd DESC LIMIT 1",
+                "SELECT Value, PeriodEnd, SubmittedBy, ValueNote FROM KpiValues"
+                " WHERE KpiValueId=? ORDER BY PeriodEnd DESC LIMIT 1",
                 (k["KpiId"],)).fetchone()
             if row is None:
                 return ("Pending source" if k["KpiOwner"] else "Pending definition"), None
@@ -150,6 +168,9 @@ def strategy_2035(request: Request):
                 g["headline_value"] = int(row["Value"]) if row["Value"] == int(row["Value"]) else row["Value"]
                 g["headline_target"] = int(headline["Target"]) if headline["Target"] and headline["Target"] == int(headline["Target"]) else headline["Target"]
                 g["as_of"] = row["PeriodEnd"]
+                # provenance (strategy-kpi-data spec): source, as-of, submitter visible
+                g["source_note"] = (row["ValueNote"] or "").strip() or headline["Method"] or "KPI owner submission"
+                g["submitter"] = row["SubmittedBy"]
                 if headline["Target"]:
                     g["pct"] = min(round(100 * row["Value"] / headline["Target"], 1), 100)
                     g["pct_f"] = g["pct"]
@@ -256,6 +277,40 @@ def strategy_2035(request: Request):
         "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
     })
 
+@app.get("/readiness", response_class=HTMLResponse)
+def readiness_page(request: Request):
+    import demo.readiness as readiness
+    gates, has_blocking, has_warn = readiness.evaluate()
+    return templates.TemplateResponse(request, "readiness.html", {
+        "request": request, "role": role(request),
+        "gates": gates, "has_blocking": has_blocking, "has_warn": has_warn,
+    })
+
+# ---------- Data feed (data-feed spec) ----------
+
+@app.get("/api/feed")
+def feed_manifest():
+    """Feed manifest; refreshes the export then serves metadata. College-level
+    aggregates by construction (design D4) — no item-level rows, so no role filter
+    is needed beyond the app itself."""
+    from demo.export_feed import export_feed
+    import json as _json
+    manifest = export_feed()
+    return _json.loads((Path(__file__).resolve().parent / "output" / "feed" / "manifest.json").read_text(encoding="utf-8"))
+
+@app.get("/api/feed/{name}")
+def feed_file(name: str):
+    """Serve one feed file by name (only known feed names)."""
+    from fastapi.responses import FileResponse, PlainTextResponse
+    allowed = {"kpis.csv", "rag-counts.csv", "currency.csv", "intake-aging.csv",
+               "readiness.json", "findings.json", "manifest.json"}
+    if name not in allowed:
+        return PlainTextResponse("unknown feed file", status_code=404)
+    path = Path(__file__).resolve().parent / "output" / "feed" / name
+    if not path.exists():
+        return PlainTextResponse("feed not exported yet", status_code=503)
+    return FileResponse(path)
+
 # ---------- Phase 1 views ----------
 
 @app.get("/overview", response_class=HTMLResponse)
@@ -350,12 +405,16 @@ def governance(request: Request):
         """SELECT r.* FROM IntakeRequests r WHERE r.Status='Approved' AND r.Tier='2'""").fetchall()
     decisions = con.execute(
         "SELECT * FROM Decisions ORDER BY DecisionDate DESC LIMIT 8").fetchall()
+    # finding-tracker: governance sees findings escalated to 3+ occurrences
+    from demo.findings import open_findings
+    escalated_findings = [dict(f) for f in open_findings(con, min_occurrences=3)]
     con.close()
     return templates.TemplateResponse(request, "governance.html", {
         "request": request, "role": role(request),
         "requests": [dict(r) for r in reqs],
         "tier2": [dict(t) for t in tier2],
         "decisions": [dict(d) for d in decisions],
+        "escalated_findings": escalated_findings,
         "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
     })
 
@@ -385,6 +444,10 @@ def unit_view(request: Request, unit_id: str):
         (eff_unit,)).fetchall()
 
     unit = con.execute("SELECT * FROM Units WHERE UnitId = ?", (eff_unit,)).fetchone()
+
+    # finding-tracker: recurring markers on this unit's items (2+ occurrences)
+    from demo.findings import open_findings, escalation_level
+    unit_findings = {f["AffectedItemId"]: f for f in open_findings(con, unit=eff_unit, min_occurrences=2)}
     con.close()
     return templates.TemplateResponse(request, "unit.html", {
         "request": request, "role": r, "unit": dict(unit) if unit else {"UnitId": unit_id, "Name": unit_id},
@@ -392,6 +455,7 @@ def unit_view(request: Request, unit_id: str):
         "statuses": {k: dict(v) for k, v in su.items()},
         "action_needed": action_needed,
         "milestones": [dict(m) for m in milestones],
+        "unit_findings": {k: dict(v) for k, v in unit_findings.items()},
         "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
     })
 
@@ -439,6 +503,21 @@ def priority_detail(request: Request, pid: str):
         "SELECT COALESCE(SUM(CCCount),0) AS n FROM ConfidentialCounts WHERE CCPriorityId = ?",
         (pid,)).fetchone()["n"]
     kpis = con.execute("SELECT * FROM KPIs WHERE KpiPriorityId = ?", (pid,)).fetchall()
+    kpis = [dict(k) for k in kpis]
+    for k in kpis:
+        row = con.execute(
+            "SELECT Value, PeriodEnd, SubmittedBy, ValueNote FROM KpiValues WHERE KpiValueId=?"
+            " ORDER BY PeriodEnd DESC LIMIT 1", (k["KpiId"],)).fetchone()
+        if row:
+            k["LatestValue"] = row["Value"]
+            k["AsOf"] = row["PeriodEnd"]
+            k["Submitter"] = row["SubmittedBy"]
+            k["SourceNote"] = (row["ValueNote"] or "").strip() or k["Method"] or "KPI owner submission"
+        else:
+            k["LatestValue"] = None
+            k["AsOf"] = None
+            k["Submitter"] = None
+            k["SourceNote"] = None
     su = latest_status(con, [i["ItemId"] for i in items])
     con.close()
     return templates.TemplateResponse(request, "priority.html", {

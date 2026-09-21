@@ -133,6 +133,12 @@
   .fresh { color:var(--faint); font-size:.75rem; text-align:right; margin:1rem 0 0;
            display:flex; gap:.4rem; align-items:center; justify-content:flex-end; }
   .fresh::before { content:"⟳"; color:var(--gold); }
+  .trust-banner { display:flex; align-items:center; gap:.7rem; padding:.65rem 1rem;
+                  border-radius:var(--radius); margin-bottom:1rem; font-size:.85rem;
+                  border:1px solid var(--line-strong); background:var(--surface); }
+  .trust-banner.degraded { background:var(--red-bg); border-color:var(--red); }
+  .trust-banner.warned { background:var(--amber-bg); border-color:var(--amber); }
+  .trust-banner a { white-space:nowrap; }
   .muted { color:var(--muted); } .small { font-size:.8rem; } .fainttx { color:var(--faint); }
   .empty { padding:1.6rem 1rem; text-align:center; color:var(--muted); }
   .empty .icon { font-size:1.4rem; display:block; margin-bottom:.3rem; opacity:.5; }
@@ -163,6 +169,7 @@
     <a href="/?as={{ request.query_params.get('as','executive') }}">Strategy 2035</a>
     <a href="/overview?as={{ request.query_params.get('as','executive') }}">Dean Overview</a>
     <a href="/governance?as={{ request.query_params.get('as','executive') }}">Governance</a>
+    <a href="/readiness?as={{ request.query_params.get('as','executive') }}">Readiness</a>
     <a href="/intake?as={{ request.query_params.get('as','executive') }}">Intake</a>
     {% if role %}
       {% if role['kind'] == 'Unit' %}
@@ -171,7 +178,9 @@
         <a href="/unit/DEAN?as=executive">Units</a>
       {% endif %}
     {% endif %}
-    <a href="/admin/hygiene">F7 hygiene</a>
+    <form method="post" action="/admin/hygiene" style="display:inline">
+      <button type="submit" class="secondary" style="padding:.42rem .7rem;font-size:.85rem;font-weight:500">Run F7 hygiene</button>
+    </form>
   </nav>
 </header>
 <div class="rolebar">
@@ -187,6 +196,20 @@
   <span class="demo-note">demo · data refreshes {{ generated }}</span>
 </div>
 <main id="main">
+{% set ts = trust_state() %}
+{% if ts == 'degraded' %}
+<div class="trust-banner degraded" role="alert">
+  <span class="badge b-red">Trust degraded</span>
+  A readiness gate is blocking this cycle's data.
+  <a href="/readiness?as={{ request.query_params.get('as','executive') }}"><strong>See what's blocking →</strong></a>
+</div>
+{% elif ts == 'warn' %}
+<div class="trust-banner warned">
+  <span class="badge b-amber">Readiness warnings</span>
+  Some gates need attention before the next cycle.
+  <a href="/readiness?as={{ request.query_params.get('as','executive') }}">Review readiness →</a>
+</div>
+{% endif %}
 {% block content %}{% endblock %}
 </main>
 </body>

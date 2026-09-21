@@ -83,6 +83,8 @@
       </div>
       <div class="statusline">
         {% if i['Confidential'] %}<span class="badge b-stale">Confidential</span>{% endif %}
+        {% set f = unit_findings.get(i['ItemId']) %}
+        {% if f %}<span class="badge b-red">Recurring ×{{ f['Occurrences'] }} · {{ f['Type'] }}</span>{% endif %}
         {% if s %}
           <span class="badge b-{{ s['OverallRAG'] | lower }}">{{ s['OverallRAG'] }}</span>
           {% if s['PeriodEnd'] <= '2026-08-31' %}<span class="badge b-stale">Stale</span>{% endif %}

@@ -1,0 +1,7 @@
+PriorityId,Green,Amber,Red,Stale,Total,ConfidentialMasked
+,15,4,1,15,20,2
+SP-01,9,2,1,9,12,0
+SP-02,7,1,0,6,8,0
+SP-03,7,9,2,14,18,0
+SP-04,2,2,0,3,4,0
+SP-05,4,8,0,9,12,1

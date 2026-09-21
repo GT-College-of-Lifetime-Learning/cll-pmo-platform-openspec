@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}F7 Hygiene{% endblock %}
+{% block content %}
+<h1>F7 hygiene run</h1>
+<p class="lede">Daily checks: findings recorded by recurrence, call-up windows closed, SLA notices.
+Failures produce escalation flags, not false silence.</p>
+
+<div class="stat-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.75rem;margin:1.25rem 0">
+  <div class="kpi-tile"><div class="num">{{ findings_touched | length }}</div><div class="lbl">Findings touched</div></div>
+  <div class="kpi-tile"><div class="num">{{ callup_closed }}</div><div class="lbl">Call-up windows closed</div></div>
+  <div class="kpi-tile"><div class="num">{{ triage_late }}</div><div class="lbl">Triage &gt; 5 days</div></div>
+  <div class="kpi-tile"><div class="num">{{ escalated | length }}</div><div class="lbl">Escalated findings (2+)</div></div>
+</div>
+
+<h2>Findings touched this run</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Type</th><th>Affected</th></tr></thead>
+  <tbody>
+  {% for t in findings_touched %}
+    <tr><td><span class="badge b-amber">{{ t[0] }}</span></td><td>{{ t[1] }}</td></tr>
+  {% else %}<tr><td colspan="2" class="empty"><span class="icon">✅</span>No new findings</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<h2>Escalation ladder — findings at 2+ occurrences</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Type</th><th>Unit</th><th>Affected</th><th>Occurrences</th><th>Level</th><th>First seen</th><th>Last seen</th></tr></thead>
+  <tbody>
+  {% for f in escalated %}
+    <tr>
+      <td>{{ f['Type'] }}</td><td>{{ f['AffectedUnitId'] }}</td><td>{{ f['AffectedItemId'] }}</td>
+      <td><strong>{{ f['Occurrences'] }}</strong></td>
+      <td>{% if f['Occurrences'] >= 4 %}<span class="badge b-red">Blocks closeout</span>
+          {% elif f['Occurrences'] == 3 %}<span class="badge b-red">Escalated</span>
+          {% else %}<span class="badge b-amber">Recurring</span>{% endif %}</td>
+      <td class="small">{{ f['FirstSeenOn'] }}</td><td class="small">{{ f['LastSeenOn'] }}</td>
+    </tr>
+  {% else %}<tr><td colspan="7" class="empty"><span class="icon">✅</span>Nothing at escalation level</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="small muted">Ladder: 2 occurrences → Recurring on the unit view · 3 → governance needs-attention ·
+4 → blocks the item from closing until resolved. Resolution resets the counter.</p>
+{% endblock %}

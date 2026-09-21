@@ -72,6 +72,9 @@ CREATE TABLE Capabilities (CapabilityId TEXT PRIMARY KEY, CapName TEXT, Area TEX
     InScope INT, LinkedItemId TEXT);
 CREATE TABLE BusinessDays (Date TEXT PRIMARY KEY, IsBusinessDay INT, BDOfYear INT,
     MonthEnd INT, QuarterEnd INT, IsHoliday INT);
+CREATE TABLE Findings (FindingId INTEGER PRIMARY KEY AUTOINCREMENT, Type TEXT,
+    AffectedUnitId TEXT, AffectedItemId TEXT, Severity TEXT, FirstSeenOn TEXT,
+    LastSeenOn TEXT, Occurrences INT, Status TEXT, ResolvedBy TEXT, ResolvedOn TEXT);
 CREATE INDEX idx_wi_stage ON WorkItems(Stage);
 CREATE INDEX idx_wi_unit ON WorkItems(LeadUnitId);
 CREATE INDEX idx_su_item ON StatusUpdates(ItemId, PeriodEnd);

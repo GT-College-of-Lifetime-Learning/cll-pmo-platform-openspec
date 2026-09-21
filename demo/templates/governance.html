@@ -32,6 +32,26 @@
 {% endif %}
 </section>
 
+<section aria-label="Needs attention">
+<h2>Needs attention — recurring findings (3+ occurrences)</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Type</th><th>Unit</th><th>Affected</th><th>Occurrences</th><th>Since</th><th>Level</th></tr></thead>
+  <tbody>
+  {% for f in escalated_findings %}
+    <tr>
+      <td>{{ f['Type'] }}</td><td>{{ f['AffectedUnitId'] }}</td><td>{{ f['AffectedItemId'] }}</td>
+      <td><strong>{{ f['Occurrences'] }}</strong></td>
+      <td class="small">{{ f['FirstSeenOn'] }} → {{ f['LastSeenOn'] }}</td>
+      <td>{% if f['Occurrences'] >= 4 %}<span class="badge b-red">Blocks closeout</span>{% else %}<span class="badge b-red">Escalated</span>{% endif %}</td>
+    </tr>
+  {% else %}<tr><td colspan="6" class="empty"><span class="icon">✅</span>No findings at escalation level</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+</section>
+
 <section aria-label="Call-up">
 <h2>Tier 2 approvals open for call-up (10 business days)</h2>
 <div class="tablewrap">

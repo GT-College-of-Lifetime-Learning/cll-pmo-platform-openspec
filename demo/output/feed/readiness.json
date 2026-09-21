@@ -1,0 +1,37 @@
+{
+  "as_of": "2026-09-19",
+  "has_blocking": false,
+  "has_warn": true,
+  "gates": [
+    {
+      "name": "Status currency",
+      "detail": "Share of active/on-hold items with a current status update",
+      "state": "WARN",
+      "text": "94.7% of active items current (floor 90%)"
+    },
+    {
+      "name": "Stale active items",
+      "detail": "Active/on-hold items with no update this cycle",
+      "state": "WARN",
+      "text": "1 of 19 active items stale"
+    },
+    {
+      "name": "Decisions past SLA",
+      "detail": "Requests awaiting decision for more than 10 business days",
+      "state": "WARN",
+      "text": "3 decision(s) past the 10-business-day SLA"
+    },
+    {
+      "name": "Expired call-up windows",
+      "detail": "Tier 2 call-up windows past their 10-business-day close, not yet closed by hygiene",
+      "state": "OK",
+      "text": "0 window(s) expired and unclosed"
+    },
+    {
+      "name": "Core flows reachable",
+      "detail": "Intake and status forms operational",
+      "state": "OK",
+      "text": "intake + status forms reachable"
+    }
+  ]
+}
