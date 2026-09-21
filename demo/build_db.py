@@ -35,7 +35,7 @@ CREATE TABLE KPIs (KpiId TEXT PRIMARY KEY, KpiName TEXT, KpiDefinition TEXT, Kpi
     DashboardRole TEXT, Basis TEXT, CountingStart TEXT,
     Baseline REAL, Target REAL, TargetDate TEXT, Frequency TEXT, KpiSource TEXT, Method TEXT,
     ProvisionalFlag INT, KpiNote TEXT);
-CREATE TABLE KpiValues (KpiValueId TEXT, PeriodEnd TEXT, Value REAL, ValueNote TEXT, SubmittedBy TEXT);
+CREATE TABLE KpiValues (KpiValueId TEXT, PeriodEnd TEXT, Value REAL, ValueNote TEXT, SubmittedBy TEXT, DataSource TEXT DEFAULT 'demo-seed');
 CREATE TABLE Portfolios (PortfolioId TEXT PRIMARY KEY, PortfolioTitle TEXT, PortPriorityId TEXT, PortfolioOwner TEXT);
 CREATE TABLE WorkItems (ItemId TEXT PRIMARY KEY, Level TEXT, Title TEXT, ParentId TEXT,
     WorkPortfolioId TEXT, PrimaryPriorityId TEXT, PrimaryObjectiveId TEXT,
@@ -66,15 +66,22 @@ CREATE TABLE ConfidentialCounts (CCPriorityId TEXT, CCLeadUnitId TEXT, CCTier TE
 CREATE TABLE KpiTrajectories (KpiId TEXT, PeriodEnd TEXT, ExpectedValue REAL,
     Approved INT, ApprovedBy TEXT, ApprovedOn TEXT, TrajNote TEXT);
 CREATE TABLE StrategyActivity (ActivityId TEXT PRIMARY KEY, Type TEXT, ActPriorityId TEXT,
-    ActTitle TEXT, ActDate TEXT, ActValue REAL, ActUoM TEXT, ActSource TEXT, ActSubmittedBy TEXT);
+    ActTitle TEXT, ActDate TEXT, ActValue REAL, ActUoM TEXT, ActSource TEXT, ActSubmittedBy TEXT,
+    DataSource TEXT DEFAULT 'demo-seed');
 CREATE TABLE Capabilities (CapabilityId TEXT PRIMARY KEY, CapName TEXT, Area TEXT,
     OwningUnitId TEXT, Level INT, AssessedOn TEXT, Assessor TEXT, EvidenceUrl TEXT,
-    InScope INT, LinkedItemId TEXT);
+    InScope INT, LinkedItemId TEXT, DataSource TEXT DEFAULT 'demo-seed');
 CREATE TABLE BusinessDays (Date TEXT PRIMARY KEY, IsBusinessDay INT, BDOfYear INT,
     MonthEnd INT, QuarterEnd INT, IsHoliday INT);
 CREATE TABLE Findings (FindingId INTEGER PRIMARY KEY AUTOINCREMENT, Type TEXT,
     AffectedUnitId TEXT, AffectedItemId TEXT, Severity TEXT, FirstSeenOn TEXT,
     LastSeenOn TEXT, Occurrences INT, Status TEXT, ResolvedBy TEXT, ResolvedOn TEXT);
+CREATE TABLE DataNeeds (NeedId TEXT PRIMARY KEY, Element TEXT, ConsumerView TEXT,
+    RequiredFields TEXT, Cadence TEXT, DefinitionState TEXT, SourceState TEXT,
+    SourceSystem TEXT, SourceFormat TEXT, SourceRefresh TEXT, Steward TEXT, Notes TEXT);
+CREATE TABLE SourceDeclarations (DeclarationId TEXT PRIMARY KEY, Element TEXT,
+    System TEXT, Format TEXT, Refresh TEXT, Steward TEXT, Notes TEXT,
+    MatchedNeedId TEXT, RecordedOn TEXT);
 CREATE INDEX idx_wi_stage ON WorkItems(Stage);
 CREATE INDEX idx_wi_unit ON WorkItems(LeadUnitId);
 CREATE INDEX idx_su_item ON StatusUpdates(ItemId, PeriodEnd);
@@ -241,8 +248,8 @@ def main():
     periods = ["2026-03-31", "2026-06-30", "2026-09-15"]
     for kid, vals in kpi_vals.items():
         for p, v in zip(periods, vals):
-            con.execute("INSERT INTO KpiValues VALUES (?,?,?,?,?)",
-                (kid, p, v, "", "Institutional Research"))
+            con.execute("INSERT INTO KpiValues VALUES (?,?,?,?,?,?)",
+                (kid, p, v, "", "Institutional Research", "demo-seed"))
 
     # ---- Work items ----
     def insert_item(n, level, title, pri, obj, unit, contributing, tier, stage,
@@ -407,8 +414,8 @@ def main():
     kpi_vals["KPI-012"] = [2.6, 2.6, 2.7]  # maturity index, semiannual
     # KPI-012 values
     for p, v in zip(["2026-03-31", "2026-06-30", "2026-09-15"], kpi_vals["KPI-012"]):
-        con.execute("INSERT INTO KpiValues VALUES (?,?,?,?,?)",
-            ("KPI-012", p, v, "Demo: first full assessment pending", "Strategic Operations"))
+        con.execute("INSERT INTO KpiValues VALUES (?,?,?,?,?,?)",
+            ("KPI-012", p, v, "Demo: first full assessment pending", "Strategic Operations", "demo-seed"))
 
     # StrategyActivity: recent entries per goal (counts/names only, never learners)
     acts = [
@@ -429,8 +436,8 @@ def main():
         ("ACT-015", "CapabilityDelivered", "SP-05", "Unit status reporting digitized (this system)", "2026-09-15", 1, "capability", "Strategic Operations"),
         ("ACT-016", "CapabilityDelivered", "SP-05", "Budget alerting automated", "2026-06-15", 1, "capability", "Central Ops"),
     ]
-    con.executemany("INSERT INTO StrategyActivity VALUES (?,?,?,?,?,?,?,?,?)",
-        [(aid, t, p, title, d, v, uom, src, src) for
+    con.executemany("INSERT INTO StrategyActivity VALUES (?,?,?,?,?,?,?,?,?,?)",
+        [(aid, t, p, title, d, v, uom, src, src, "demo-seed") for
          (aid, t, p, title, d, v, uom, src) in acts])
 
     # Capabilities: first partial inventory (levels 1-5, evidence required)
@@ -446,7 +453,8 @@ def main():
         ("CAP-009", "HR onboarding for student staff", "HR/staffing", "CEISMC", 1, "2026-08-15", "CEISMC Ops", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-009", 1, None),
         ("CAP-010", "Content renewal review", "content development", "GTPE", 2, "2026-06-30", "GTPE Academic", "https://gatech.sharepoint.com/sites/CLL-SPM/evidence/cap-010", 1, None),
     ]
-    con.executemany("INSERT INTO Capabilities VALUES (?,?,?,?,?,?,?,?,?,?)", caps)
+    con.executemany("INSERT INTO Capabilities VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        [c + ("demo-seed",) for c in caps])
 
     # Business-day calendar from the Phase 1 generated table (task 2.11)
     cal_path = ROOT / "sharepoint" / "lists" / "business-days.csv"
@@ -462,6 +470,12 @@ def main():
             con.execute("INSERT OR IGNORE INTO BusinessDays VALUES (?,?,?,?,?,?)",
                 (d.isoformat(), 1 if d.weekday() < 5 else 0, 0, 0, 0, 0))
             d += dt.timedelta(days=1)
+
+    # Data-needs catalog (add-data-source-reconciliation)
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from demo.data_catalog import seed_catalog
+    seed_catalog(con)
 
     con.commit()
     counts = {t: con.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in

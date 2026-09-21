@@ -149,7 +149,7 @@ def strategy_2035(request: Request):
             if k is None:
                 return "Pending definition", None
             row = con.execute(
-                "SELECT Value, PeriodEnd, SubmittedBy, ValueNote FROM KpiValues"
+                "SELECT Value, PeriodEnd, SubmittedBy, ValueNote, DataSource FROM KpiValues"
                 " WHERE KpiValueId=? ORDER BY PeriodEnd DESC LIMIT 1",
                 (k["KpiId"],)).fetchone()
             if row is None:
@@ -171,6 +171,9 @@ def strategy_2035(request: Request):
                 # provenance (strategy-kpi-data spec): source, as-of, submitter visible
                 g["source_note"] = (row["ValueNote"] or "").strip() or headline["Method"] or "KPI owner submission"
                 g["submitter"] = row["SubmittedBy"]
+                # origin tag (data-sourcing spec): fabricated never masquerades as real
+                ds = row["DataSource"] or "demo-seed"
+                g["origin"] = "fabricated demo data" if ds == "demo-seed" else ds
                 if headline["Target"]:
                     g["pct"] = min(round(100 * row["Value"] / headline["Target"], 1), 100)
                     g["pct_f"] = g["pct"]
@@ -303,13 +306,51 @@ def feed_file(name: str):
     """Serve one feed file by name (only known feed names)."""
     from fastapi.responses import FileResponse, PlainTextResponse
     allowed = {"kpis.csv", "rag-counts.csv", "currency.csv", "intake-aging.csv",
-               "readiness.json", "findings.json", "manifest.json"}
+               "readiness.json", "findings.json", "coverage.json", "manifest.json"}
     if name not in allowed:
         return PlainTextResponse("unknown feed file", status_code=404)
     path = Path(__file__).resolve().parent / "output" / "feed" / name
     if not path.exists():
         return PlainTextResponse("feed not exported yet", status_code=503)
     return FileResponse(path)
+
+@app.get("/coverage", response_class=HTMLResponse)
+def coverage_page(request: Request):
+    """data-sourcing spec: per-need sourced/partial/unsourced, grouped by
+    consumer view, with UNDEFINED needs surfaced for sponsor routing."""
+    con = db()
+    needs = [dict(r) for r in con.execute(
+        "SELECT * FROM DataNeeds ORDER BY ConsumerView, NeedId").fetchall()]
+    unmatched = [dict(r) for r in con.execute(
+        "SELECT * FROM SourceDeclarations WHERE MatchedNeedId IS NULL").fetchall()]
+    con.close()
+
+    def coverage_state(n):
+        if n["SourceState"] == "HAVE":
+            return "sourced"
+        if n["SourceState"] == "PARTIAL":
+            return "partial"
+        return "unsourced"
+
+    by_view = {}
+    for n in needs:
+        n["coverage"] = coverage_state(n)
+        by_view.setdefault(n["ConsumerView"], []).append(n)
+    view_summary = {v: {
+        "sourced": sum(1 for n in rows if n["coverage"] == "sourced"),
+        "partial": sum(1 for n in rows if n["coverage"] == "partial"),
+        "unsourced": sum(1 for n in rows if n["coverage"] == "unsourced"),
+    } for v, rows in by_view.items()}
+    undefined = [n for n in needs if n["DefinitionState"].startswith("UNDEFINED")]
+
+    return templates.TemplateResponse(request, "coverage.html", {
+        "request": request, "role": role(request),
+        "by_view": by_view, "view_summary": view_summary,
+        "undefined": undefined, "unmatched": unmatched,
+        "totals": {"sourced": sum(1 for n in needs if n["coverage"] == "sourced"),
+                   "partial": sum(1 for n in needs if n["coverage"] == "partial"),
+                   "unsourced": sum(1 for n in needs if n["coverage"] == "unsourced")},
+    })
 
 # ---------- Phase 1 views ----------
 

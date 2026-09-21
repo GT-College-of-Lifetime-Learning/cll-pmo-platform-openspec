@@ -38,9 +38,20 @@ Trust features (`add-trust-and-readiness-features`):
 | `demo/export_feed.py` (feed + manifest) | The SharePoint lists are the feed; manifest = freshness stamps |
 | Provenance sub-labels on cards | Power BI tooltips on the same columns |
 
-Feed: `python demo\export_feed.py` writes `demo/output/feed/` (7 files +
+Feed: `python demo\export_feed.py` writes `demo/output/feed/` (8 files +
 manifest); `/api/feed` serves it. Files are written even when empty (explicit
 no-data states) and CSVs are injection-guarded.
+
+Data sourcing (`add-data-source-reconciliation`): the P2/P3 instrument —
+`/coverage` page + `coverage.json` feed; `docs/data-source-matrix.md` is
+GENERATED from the `DataNeeds` catalog (`python demo\generate_matrix.py`;
+hand edits are rejected). Steward declarations land via
+`sharepoint/seed/source-declarations.csv` + `demo\load_declarations.py`
+(unmatched elements go to a review queue, never silently creating rows).
+Per-source integration increments are per-source loaders — first increment:
+confirmed Institute holidays (`sharepoint/seed/gt-holidays.csv` +
+`demo\load_holidays.py`). Real imported data is origin-tagged; fabricated
+data is labeled as such on provenance lines.
 
 Test battery: `demo\tests\` — routes (12), flows (18), visuals (12), timeline
 hand-check, planted-defect suite (30). Run after any change; planted defects

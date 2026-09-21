@@ -113,6 +113,8 @@ def export_feed(out_dir=None):
     write("intake-aging.csv", ["Status", "Count", "AvgAgeDays"], intake)
 
     # readiness.json — the gate states at export time
+    import sys
+    sys.path.insert(0, str(DEMO.parent))
     import demo.readiness as readiness
     gates, has_blocking, has_warn = readiness.evaluate()
     readiness_doc = {
@@ -131,6 +133,17 @@ def export_feed(out_dir=None):
         ORDER BY Occurrences DESC""")
     (out / "findings.json").write_text(json.dumps(escalated, indent=2), encoding="utf-8")
     manifest["files"]["findings.json"] = len(escalated)
+
+    # coverage.json — per-need source state + per-view aggregates (data-sourcing spec)
+    needs = _rows(con, "SELECT NeedId, Element, ConsumerView, DefinitionState,"
+                       " SourceState FROM DataNeeds ORDER BY NeedId")
+    cov = {"needs": needs, "undefined": [n for n in needs
+                                          if n["DefinitionState"].startswith("UNDEFINED")],
+           "totals": {"HAVE": sum(1 for n in needs if n["SourceState"] == "HAVE"),
+                      "PARTIAL": sum(1 for n in needs if n["SourceState"] == "PARTIAL"),
+                      "MISSING": sum(1 for n in needs if n["SourceState"] == "MISSING")}}
+    (out / "coverage.json").write_text(json.dumps(cov, indent=2), encoding="utf-8")
+    manifest["files"]["coverage.json"] = len(needs)
 
     con.close()
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")

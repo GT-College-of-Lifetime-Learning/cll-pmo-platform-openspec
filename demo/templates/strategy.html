@@ -122,7 +122,8 @@
       <span class="fainttx">· {{ g.pct }}% of target</span>
     </div>
     {% if g.source_note %}
-    <div class="prov-row small muted">source: {{ g.source_note }} · as of {{ g.as_of }} · by {{ g.submitter }}</div>
+    <div class="prov-row small muted">source: {{ g.source_note }} · as of {{ g.as_of }} · by {{ g.submitter }}
+      {% if g.origin %}· <em>{{ g.origin }}</em>{% endif %}</div>
     {% endif %}
   {% endif %}
 

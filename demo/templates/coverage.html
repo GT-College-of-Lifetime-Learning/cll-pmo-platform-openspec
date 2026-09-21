@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Data coverage{% endblock %}
+{% block pagecss %}
+.cov-tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.75rem; margin:1.25rem 0; }
+.cov-tiles .kpi-tile { border-left:4px solid var(--green); }
+.cov-tiles .kpi-tile.p { border-left-color:var(--amber); }
+.cov-tiles .kpi-tile.u { border-left-color:var(--red); }
+.view-block h2::before { display:none; }
+.sponsor-panel { border:1px solid var(--amber); border-left:5px solid var(--amber);
+                 background:var(--amber-bg); border-radius:var(--radius); padding:1rem 1.1rem; margin-bottom:1.25rem; }
+.sponsor-panel h2 { margin-top:0; }
+.state-chip { font-size:.7rem; font-weight:700; padding:.14rem .55rem; border-radius:999px; }
+.s-sourced { background:var(--green-bg); color:var(--green); }
+.s-partial { background:var(--amber-bg); color:var(--amber); }
+.s-unsourced { background:var(--red-bg); color:var(--red); }
+{% endblock %}
+{% block content %}
+<h1>Data coverage</h1>
+<p class="lede">What can this dashboard truthfully show today? Every external data need, its source
+state, and where it's consumed. Fabricated data never masquerades as real — origin tags on provenance
+make the mixture explicit.</p>
+
+<div class="cov-tiles">
+  <div class="kpi-tile"><div class="num">{{ totals.sourced }}</div><div class="lbl">Sourced (HAVE)</div></div>
+  <div class="kpi-tile p"><div class="num">{{ totals.partial }}</div><div class="lbl">Partial</div></div>
+  <div class="kpi-tile u"><div class="num">{{ totals.unsourced }}</div><div class="lbl">Unsourced</div></div>
+</div>
+
+{% if undefined %}
+<section class="sponsor-panel" aria-label="Needs sponsor decisions">
+<h2>Needs-attention: definitions routed to the sponsor first</h2>
+<p class="small" style="margin-top:0">These rows are definition-gated — no source-building work begins
+until the Dean answers the linked question. UNDEFINED ⇒ sponsor, before any loader exists.</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Need</th><th>Definition state</th><th>Question</th><th>Consumer view</th></tr></thead>
+  <tbody>
+  {% for n in undefined %}
+    <tr><td>{{ n['NeedId'] }} — {{ n['Element'] }}</td>
+        <td><span class="badge b-amber">{{ n['DefinitionState'] }}</span></td>
+        <td class="small">{{ n['Notes'] or '—' }}</td>
+        <td class="small">{{ n['ConsumerView'] }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+</section>
+{% endif %}
+
+{% for view, rows in by_view.items() %}
+<section class="view-block" aria-label="{{ view }}">
+<h2>{{ view }} <span class="small muted">({{ view_summary[view].sourced }} sourced · {{ view_summary[view].partial }} partial · {{ view_summary[view].unsourced }} unsourced)</span></h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Need</th><th>Cadence</th><th>Definition</th><th>Source state</th><th>System</th><th>Steward</th><th>Notes</th></tr></thead>
+  <tbody>
+  {% for n in rows %}
+    <tr>
+      <td>{{ n['NeedId'] }} — {{ n['Element'] }}</td>
+      <td class="small">{{ n['Cadence'] }}</td>
+      <td class="small">{% if n['DefinitionState'].startswith('UNDEFINED') %}<span class="badge b-amber">{{ n['DefinitionState'] }}</span>{% else %}{{ n['DefinitionState'] }}{% endif %}</td>
+      <td><span class="state-chip s-{{ 'sourced' if n['SourceState'] == 'HAVE' else 'partial' if n['SourceState'] == 'PARTIAL' else 'unsourced' }}">{{ n['SourceState'] }}</span></td>
+      <td class="small">{{ n['SourceSystem'] or '—' }}</td>
+      <td class="small">{{ n['Steward'] or '—' }}</td>
+      <td class="small muted">{{ n['Notes'] or '' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+</section>
+{% endfor %}
+
+{% if unmatched %}
+<section aria-label="Unmatched declarations">
+<h2>Unmatched source declarations (review queue)</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Element declared</th><th>System</th><th>Steward</th><th>Recorded</th></tr></thead>
+  <tbody>
+  {% for d in unmatched %}
+    <tr><td>{{ d['Element'] }}</td><td>{{ d['System'] }}</td>
+        <td>{{ d['Steward'] }}</td><td class="small">{{ d['RecordedOn'] }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="small muted">Declarations naming elements not in the catalog land here — they never silently create catalog rows.</p>
+</section>
+{% endif %}
+{% endblock %}

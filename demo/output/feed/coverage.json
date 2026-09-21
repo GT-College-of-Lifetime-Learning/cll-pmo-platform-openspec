@@ -1,0 +1,228 @@
+{
+  "needs": [
+    {
+      "NeedId": "DN-001",
+      "Element": "Learning-systems graduates (KPI-001)",
+      "ConsumerView": "Strategy 2035 / Goal 1",
+      "DefinitionState": "UNDEFINED-Q2",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-002",
+      "Element": "Fortune 500 leaders credentialed (KPI-003)",
+      "ConsumerView": "Strategy 2035 / Goal 1",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-003",
+      "Element": "Connected learning hubs (KPI-004)",
+      "ConsumerView": "Strategy 2035 / Goal 2",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-004",
+      "Element": "Hub locations (lat/long per hub)",
+      "ConsumerView": "Strategy 2035 / Goal 2 map",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-005",
+      "Element": "Start-ups with market adoption (KPI-005)",
+      "ConsumerView": "Strategy 2035 / Goal 2",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-006",
+      "Element": "Learner touchpoints (KPI-006)",
+      "ConsumerView": "Strategy 2035 / Goal 3",
+      "DefinitionState": "UNDEFINED-Q6",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-007",
+      "Element": "Unique learners credentialed (KPI-007)",
+      "ConsumerView": "Strategy 2035 / Goal 3",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-008",
+      "Element": "3-year graduation rate (KPI-008)",
+      "ConsumerView": "Priority detail / Goal 3",
+      "DefinitionState": "defined-partial",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-009",
+      "Element": "Annual content renewal rate (KPI-009)",
+      "ConsumerView": "Priority detail / Goal 3",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-010",
+      "Element": "Annual external research expenditures (KPI-010)",
+      "ConsumerView": "Strategy 2035 / Goal 4",
+      "DefinitionState": "UNDEFINED-Q7",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-011",
+      "Element": "Digital Transformation Maturity Index (KPI-012)",
+      "ConsumerView": "Strategy 2035 / Goal 5",
+      "DefinitionState": "UNDEFINED-Q5",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-012",
+      "Element": "Dashboard KPI coverage (KPI-011)",
+      "ConsumerView": "Priority detail / Goal 5",
+      "DefinitionState": "defined",
+      "SourceState": "HAVE"
+    },
+    {
+      "NeedId": "DN-013",
+      "Element": "Term graduates by term",
+      "ConsumerView": "Strategy 2035 / Goal 1 recent",
+      "DefinitionState": "UNDEFINED-Q2",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-014",
+      "Element": "Hub openings",
+      "ConsumerView": "Strategy 2035 / Goal 2 recent",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-015",
+      "Element": "Credentials issued",
+      "ConsumerView": "Strategy 2035 / Goal 3 recent",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-016",
+      "Element": "Grants awarded",
+      "ConsumerView": "Strategy 2035 / Goal 4 recent",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-017",
+      "Element": "Capabilities delivered",
+      "ConsumerView": "Strategy 2035 / Goal 5 recent",
+      "DefinitionState": "defined",
+      "SourceState": "HAVE"
+    },
+    {
+      "NeedId": "DN-018",
+      "Element": "Capability inventory with maturity ratings",
+      "ConsumerView": "Strategy 2035 / Goal 5",
+      "DefinitionState": "UNDEFINED-Q5",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-019",
+      "Element": "Institute holiday calendar",
+      "ConsumerView": "Readiness / business-day math (all views)",
+      "DefinitionState": "defined",
+      "SourceState": "HAVE"
+    },
+    {
+      "NeedId": "DN-020",
+      "Element": "Executive milestones (forecast dates)",
+      "ConsumerView": "Dean Overview",
+      "DefinitionState": "defined",
+      "SourceState": "HAVE"
+    },
+    {
+      "NeedId": "DN-021",
+      "Element": "Status updates (RAG, currency)",
+      "ConsumerView": "Dean Overview / Unit",
+      "DefinitionState": "defined",
+      "SourceState": "HAVE"
+    },
+    {
+      "NeedId": "DN-022",
+      "Element": "In-flight work backfill (pilot units)",
+      "ConsumerView": "Dean Overview / Governance",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-023",
+      "Element": "Intake requests + decisions",
+      "ConsumerView": "Governance",
+      "DefinitionState": "defined",
+      "SourceState": "HAVE"
+    },
+    {
+      "NeedId": "DN-024",
+      "Element": "Scoring rubric calibration (weights)",
+      "ConsumerView": "Governance",
+      "DefinitionState": "defined",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-025",
+      "Element": "Unit registry (units, heads, access)",
+      "ConsumerView": "All views (RLS, unit pages)",
+      "DefinitionState": "defined",
+      "SourceState": "PARTIAL"
+    }
+  ],
+  "undefined": [
+    {
+      "NeedId": "DN-001",
+      "Element": "Learning-systems graduates (KPI-001)",
+      "ConsumerView": "Strategy 2035 / Goal 1",
+      "DefinitionState": "UNDEFINED-Q2",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-006",
+      "Element": "Learner touchpoints (KPI-006)",
+      "ConsumerView": "Strategy 2035 / Goal 3",
+      "DefinitionState": "UNDEFINED-Q6",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-010",
+      "Element": "Annual external research expenditures (KPI-010)",
+      "ConsumerView": "Strategy 2035 / Goal 4",
+      "DefinitionState": "UNDEFINED-Q7",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-011",
+      "Element": "Digital Transformation Maturity Index (KPI-012)",
+      "ConsumerView": "Strategy 2035 / Goal 5",
+      "DefinitionState": "UNDEFINED-Q5",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-013",
+      "Element": "Term graduates by term",
+      "ConsumerView": "Strategy 2035 / Goal 1 recent",
+      "DefinitionState": "UNDEFINED-Q2",
+      "SourceState": "MISSING"
+    },
+    {
+      "NeedId": "DN-018",
+      "Element": "Capability inventory with maturity ratings",
+      "ConsumerView": "Strategy 2035 / Goal 5",
+      "DefinitionState": "UNDEFINED-Q5",
+      "SourceState": "MISSING"
+    }
+  ],
+  "totals": {
+    "HAVE": 6,
+    "PARTIAL": 1,
+    "MISSING": 18
+  }
+}

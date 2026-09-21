@@ -1,6 +1,6 @@
 {
   "feed_version": 1,
-  "generated_at": "2026-09-21T09:36:12",
+  "generated_at": "2026-09-21T10:15:29",
   "source": "cll_spm.db (demo build)",
   "files": {
     "kpis.csv": 12,
@@ -8,6 +8,7 @@
     "currency.csv": 1,
     "intake-aging.csv": 6,
     "readiness.json": 5,
-    "findings.json": 0
+    "findings.json": 0,
+    "coverage.json": 25
   }
 }
