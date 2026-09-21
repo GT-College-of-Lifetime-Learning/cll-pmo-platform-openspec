@@ -37,6 +37,9 @@ register_flow_routes(app)
 from demo.phase2_routes import register_phase2_routes  # noqa: E402
 register_phase2_routes(app)
 
+from demo.admin_routes import register_admin_routes  # noqa: E402
+register_admin_routes(app)
+
 # Trust banner (cycle-readiness spec): every page shows the readiness summary.
 # Computed per render via a Jinja global so no route has to thread it through.
 import demo.readiness as _readiness  # noqa: E402

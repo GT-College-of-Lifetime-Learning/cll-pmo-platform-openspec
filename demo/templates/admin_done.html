@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="flash">
+  <pre style="margin:0;font-size:.8rem;white-space:pre-wrap">{% for l in lines %}{{ l }}
+{% endfor %}</pre>
+</div>
+<p><a class="badge b-navy" style="padding:.45rem 1rem" href="{{ back }}?as={{ request.query_params.get('as','executive') }}">Back to the admin panel →</a></p>
+{% endblock %}

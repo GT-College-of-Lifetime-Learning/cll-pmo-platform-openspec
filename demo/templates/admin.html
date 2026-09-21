@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Admin · Development{% endblock %}
+{% block pagecss %}
+.panel-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1rem; }
+.panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+          padding:1rem 1.15rem; box-shadow:var(--shadow); }
+.panel h3 { display:flex; align-items:center; gap:.5rem; margin:0 0 .4rem; }
+.panel .desc { font-size:.78rem; color:var(--muted); margin-bottom:.7rem; }
+.panel form { display:flex; flex-direction:column; gap:.45rem; }
+.action-note { font-size:.72rem; color:var(--faint); margin-top:.4rem; }
+.count-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:.5rem; }
+.count { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm);
+         padding:.5rem .6rem; text-align:center; }
+.count .n { font-weight:800; font-size:1.1rem; color:var(--ink); }
+.count .l { font-size:.62rem; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); font-weight:600; }
+{% endblock %}
+{% block content %}
+<h1>Admin · Development</h1>
+<p class="lede">Operational and development actions for the demo — kept out of the primary
+navigation. Readiness gates are shown here too since the panel is where operators check
+system health before touching anything.</p>
+
+<section aria-label="Readiness">
+<h2>Readiness gates</h2>
+<div class="flash {{ 'alert' if has_blocking else '' }}">
+{% if has_blocking %}
+  <span class="badge b-red">BLOCKING</span> Not ready to consume — see <a href="/readiness?as={{ request.query_params.get('as','executive') }}">the readiness page</a> for gate detail.
+{% elif has_warn %}
+  <span class="badge b-amber">WARN</span> Ready with warnings — <a href="/readiness?as={{ request.query_params.get('as','executive') }}">review gates</a>.
+{% else %}
+  <span class="badge b-green">READY</span> All gates OK.
+{% endif %}
+</div>
+</section>
+
+<div class="panel-grid">
+<section class="panel" aria-label="Pipeline actions">
+  <h3><span class="badge b-navy">F7</span> Hygiene run</h3>
+  <p class="desc">Record findings by recurrence, close expired call-up windows, resolve fixed items. Escalation flags, not false silence.</p>
+  <form method="post" action="/admin/hygiene"><button type="submit">Run F7 hygiene</button></form>
+</section>
+
+<section class="panel" aria-label="Sync">
+  <h3><span class="badge b-navy">Sync</span> Execution sync</h3>
+  <p class="desc">One-way plan → registry for sync-enabled Tier 1 items. Failures feed the finding tracker.</p>
+  <form method="post" action="/admin/sync"><button type="submit">Run sync</button></form>
+</section>
+
+<section class="panel" aria-label="Feed">
+  <h3><span class="badge b-navy">Feed</span> Export data feed</h3>
+  <p class="desc">Writes the versioned feed files + manifest (empty files included; injection-guarded).</p>
+  <form method="post" action="/admin/export-feed"><button type="submit">Export feed</button></form>
+  {% if manifest %}
+    <p class="action-note">Last export: {{ manifest['generated_at'] }} ·
+      {% for name, rows in manifest['files'].items() %}{{ name }} {{ rows }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  {% else %}
+    <p class="action-note">No feed exported yet — <a href="/api/feed">/api/feed</a> will 503 until you export.</p>
+  {% endif %}
+</section>
+
+<section class="panel" aria-label="Matrix">
+  <h3><span class="badge b-navy">Docs</span> Regenerate data-source matrix</h3>
+  <p class="desc">Renders docs/data-source-matrix.md from the DataNeeds catalog. Hand edits are detected and replaced.</p>
+  <form method="post" action="/admin/matrix"><button type="submit">Regenerate matrix</button></form>
+</section>
+
+<section class="panel" aria-label="Rebuild">
+  <h3><span class="badge b-red">Dev</span> Rebuild demo database</h3>
+  <p class="desc">Destructive: replaces cll_spm.db from the deterministic seeds (incl. confirmed holidays and Phase-2 demo data). Any test-entered records are lost.</p>
+  <form method="post" action="/admin/rebuild"><button type="submit" class="secondary">Rebuild demo DB</button></form>
+  <p class="action-note">For a fresh-demo walkthrough: rebuild, then run hygiene + sync from this panel.</p>
+</section>
+
+<section class="panel" aria-label="Counts">
+  <h3>Current build</h3>
+  <p class="desc">Row counts in the working database.</p>
+  <div class="count-grid">
+    {% for table, n in counts.items() %}
+    <div class="count"><div class="n">{{ n }}</div><div class="l">{{ table }}</div></div>
+    {% endfor %}
+  </div>
+</section>
+</div>
+{% endblock %}
