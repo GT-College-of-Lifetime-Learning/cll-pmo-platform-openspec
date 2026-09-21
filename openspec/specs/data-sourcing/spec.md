@@ -1,11 +1,11 @@
-# Delta for Data Sourcing
+# Data Sourcing Specification
 
 ## Purpose
 The reconciliation instrument for external data: a catalog of what the dashboards need,
 the declared state of each source, incremental integration of real data alongside
 fabricated data, and an honest coverage view of what the dashboard can truthfully show.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Data-needs catalog
 The system SHALL maintain a catalog with one row per external data element the dashboards consume, recording at minimum: the element name, the consumer visual or view, the required fields, the reporting cadence, and the definition state, and the catalog SHALL be data, never hard-coded in views.
