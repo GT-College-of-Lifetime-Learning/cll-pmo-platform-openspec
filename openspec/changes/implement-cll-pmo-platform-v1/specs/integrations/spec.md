@@ -4,6 +4,14 @@ Change: `implement-cll-pmo-platform-v1`
 Requirements: INT-001 – INT-011 (11) · Acceptance criteria: 35
 Contracts: `contracts/integration-data-contracts.md` · Ownership: `decisions/synchronization-ownership.md`
 
+## Purpose
+
+Govern how the PMO Platform consumes data from the eleven enterprise systems
+that describe Strategy 2035 execution, and how it publishes the board package
+back out. Every feed is contract-bound, scheduled in a fixed dependency order,
+and fails closed rather than promoting data it cannot validate — because a
+silently wrong board number is worse than a visibly missing one.
+
 ## ADDED Requirements
 
 ### Requirement: INT-001 — Workday Financials ingestion

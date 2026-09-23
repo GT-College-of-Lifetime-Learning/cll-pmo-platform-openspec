@@ -4,6 +4,14 @@ Change: `implement-cll-pmo-platform-v1`
 Requirements: SEC-001 – SEC-007 (7) · Acceptance criteria: 22
 Decision record: `decisions/security-and-identity.md` (DR-SEC-001)
 
+## Purpose
+
+Protect the institutional data the platform concentrates. Project financials,
+position-level effort, enrollment aggregates and leadership commentary are each
+modest on their own but jointly sensitive, so identity is federated to Entra ID,
+access is role-based and row-scoped at the data layer, and every privileged read
+is auditable seven years later.
+
 ## ADDED Requirements
 
 ### Requirement: SEC-001 — Federated authentication via Entra ID
