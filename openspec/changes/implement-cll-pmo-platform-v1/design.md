@@ -121,6 +121,27 @@ not.
 (`registries/release-gates.md`, `registries/approval-sequences.md`). Schedule
 pressure is handled by descoping requirements, not by skipping gates.
 
+### D8 — Microsoft/Azure stack with a React + TypeScript dashboard
+
+**Decision:** the platform is built on Azure — ADLS Gen2 landing zone, Azure
+Data Factory ingestion, Azure SQL Database for the conformed and portfolio
+zones, ASP.NET Core (.NET 8) for the API, and a React 18 + TypeScript SPA for
+the dashboard. Identity is Entra ID; secrets are in Key Vault; telemetry is
+Azure Monitor and Application Insights; CI is GitHub Actions.
+
+**Why:** identity is already fixed to Entra ID (SEC-001, SEC-002) and board
+distribution targets SharePoint, so a non-Microsoft stack would contradict
+approved requirements and add a second cloud.
+
+**Rejected:** Power BI as the delivery surface (cannot capture gate decisions,
+RAID or narrative — see D2); Synapse/Fabric as the portfolio model (the model
+has write paths); Blazor for the dashboard (weaker accessibility tooling
+against WCAG 2.2 AA, and Blazor Server puts a persistent connection in the
+NFR-001 first-paint path); a non-Microsoft stack.
+
+**Consequence:** the repository is polyglot (C# and TypeScript) and CI runs
+both toolchains — see `decisions/technology-stack.md` for the full record.
+
 ## Data model sketch
 
 | Entity | Grain | Authoritative source |
@@ -144,6 +165,9 @@ pressure is handled by descoping requirements, not by skipping gates.
 - `decisions/synchronization-ownership.md` — per-field ownership, write-back
   direction, conflict resolution and cadence (governs INT-001 – INT-010,
   DQA-003).
+- `decisions/technology-stack.md` — language, framework, database, cloud and
+  CI choices, with rejected alternatives (D8; governs all implementation
+  tasks).
 
 ## Nonfunctional posture
 
