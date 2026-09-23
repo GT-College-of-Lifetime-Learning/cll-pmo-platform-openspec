@@ -146,14 +146,24 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Serve preview
-        run: npm run preview &
+      # Serve, wait and scan must share a step: a process backgrounded in one
+      # step does not survive into the next.
+      - name: Serve the build and run axe
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 > preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
 
-      - name: Wait for preview
-        run: npx --yes wait-on http://127.0.0.1:4173 --timeout 60000
+          npx --yes wait-on http://127.0.0.1:4173 --timeout 60000
 
-      - name: Run axe against the dashboard shell
-        run: npx --yes @axe-core/cli http://127.0.0.1:4173 --exit
+          npx --yes @axe-core/cli http://127.0.0.1:4173 \
+            --tags wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa \
+            --exit
+
+      - name: Show preview log on failure
+        if: failure()
+        run: cat preview.log || true
 
   openspec-artifacts:
     name: OpenSpec artifact presence
