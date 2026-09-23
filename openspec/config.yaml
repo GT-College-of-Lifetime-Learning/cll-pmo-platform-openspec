@@ -1,0 +1,56 @@
+# OpenSpec project configuration
+# Reference: https://github.com/Fission-AI/OpenSpec
+
+# Required. The workflow schema every change in this project follows.
+schema: spec-driven
+
+# Optional. Free text injected into every artifact's instructions (50KB limit).
+context: |
+  Georgia Tech College of Lifetime Learning (CLL) Strategy 2035 PMO Platform.
+
+  The platform is the system of record for strategic project execution, KPI
+  governance, stage-gate approvals and board reporting for the Strategy 2035
+  portfolio. It integrates enterprise sources (Workday Financials, Workday HCM,
+  Banner, Salesforce, Smartsheet, ServiceNow, Canvas, the Institutional Research
+  warehouse and Entra ID) into a governed portfolio data model.
+
+  Audience: PMO Director and staff, strategy pillar owners, project managers,
+  data stewards, the CLL leadership team and the Board of Advisors.
+
+  Non-negotiables:
+  - Every requirement carries a stable identifier (PREFIX-NNN) and traces to
+    acceptance criteria, tests, evidence and a release gate.
+  - Institutional data is governed: identity comes from Entra ID, access is
+    role-based and row-scoped, and every reported number is reproducible from
+    a point-in-time snapshot.
+  - Board-facing numbers are never recomputed silently; restatements are
+    explicit and disclosed.
+
+# Optional. Extra rules added to one artifact's built-in guidance, keyed by artifact id.
+rules:
+  proposal:
+    - State the problem and the institutional driver before the solution
+    - Name the impacted capabilities by their spec directory name
+  design:
+    - Record rejected alternatives, not only the chosen approach
+    - Link every cross-cutting decision to a decision record under decisions/
+  specs:
+    - Every requirement uses SHALL or MUST and carries a stable PREFIX-NNN identifier
+    - Every requirement has at least one scenario and an explicit acceptance criteria list
+    - Acceptance criteria are identified as AC-<REQ-ID>-<n> and are independently verifiable
+  tasks:
+    - Keep tasks small enough to complete and verify individually
+    - Every task declares Owner, Verifier, Dependencies, Requirements, Acceptance Criteria, Tests, Evidence and Release Gates
+    - A task may only depend on tasks in the same or an earlier phase
+
+# Optional. Advisory guidance for how apply and archive work is conducted.
+operations:
+  apply:
+    guidance:
+      - Mark a task complete only in the same commit as the finished work
+      - Attach the evidence artifact named in the task before marking it complete
+      - Do not close a release gate until every task mapped to it is complete
+  archive:
+    guidance:
+      - Sync delta specs into openspec/specs/ before archiving
+      - Archive to openspec/changes/archive/YYYY-MM-DD-<change-name>/

@@ -1,0 +1,128 @@
+{
+  "changeId": "implement-cll-pmo-platform-v1",
+  "title": "CLL Strategy 2035 PMO Platform — v1 baseline",
+  "schema": "spec-driven",
+  "status": "proposed",
+  "created": "2026-09-23",
+  "sponsor": "PMO Director, College of Lifetime Learning",
+  "repository": "GT-College-of-Lifetime-Learning/cll-pmo-platform-openspec",
+  "branch": "openspec/implement-cll-pmo-platform-v1",
+  "totals": {
+    "requirements": 72,
+    "acceptanceCriteria": 223,
+    "scenarios": 72,
+    "tasks": 101,
+    "phaseTaskFiles": 9,
+    "capabilities": 11,
+    "releaseGates": 9,
+    "sources": 11,
+    "integrationContracts": 11,
+    "decisionRecords": 2,
+    "tests": 72,
+    "evidenceRecords": 72,
+    "externalDependencies": 15
+  },
+  "capabilities": [
+    { "name": "integrations", "spec": "specs/integrations/spec.md", "prefix": "INT", "range": "INT-001..INT-011", "requirements": 11, "acceptanceCriteria": 35, "operation": "ADDED" },
+    { "name": "security", "spec": "specs/security/spec.md", "prefix": "SEC", "range": "SEC-001..SEC-007", "requirements": 7, "acceptanceCriteria": 22, "operation": "ADDED" },
+    { "name": "executive-dashboard", "spec": "specs/executive-dashboard/spec.md", "prefix": "EXD", "range": "EXD-001..EXD-008", "requirements": 8, "acceptanceCriteria": 25, "operation": "ADDED" },
+    { "name": "project-registry", "spec": "specs/project-registry/spec.md", "prefix": "PRJ", "range": "PRJ-001..PRJ-008", "requirements": 8, "acceptanceCriteria": 25, "operation": "ADDED" },
+    { "name": "kpi-governance", "spec": "specs/kpi-governance/spec.md", "prefix": "KPI", "range": "KPI-001..KPI-007", "requirements": 7, "acceptanceCriteria": 22, "operation": "ADDED" },
+    { "name": "governance-workflow", "spec": "specs/governance-workflow/spec.md", "prefix": "GOV", "range": "GOV-001..GOV-006", "requirements": 6, "acceptanceCriteria": 19, "operation": "ADDED" },
+    { "name": "data-quality", "spec": "specs/data-quality/spec.md", "prefix": "DQA", "range": "DQA-001..DQA-006", "requirements": 6, "acceptanceCriteria": 18, "operation": "ADDED" },
+    { "name": "board-reporting", "spec": "specs/board-reporting/spec.md", "prefix": "BRD", "range": "BRD-001..BRD-007", "requirements": 7, "acceptanceCriteria": 21, "operation": "ADDED" },
+    { "name": "nonfunctional", "spec": "specs/nonfunctional/spec.md", "prefix": "NFR", "range": "NFR-001..NFR-007", "requirements": 7, "acceptanceCriteria": 21, "operation": "ADDED" },
+    { "name": "verification", "spec": "specs/verification/spec.md", "prefix": "VER", "range": "VER-001..VER-003", "requirements": 3, "acceptanceCriteria": 9, "operation": "ADDED" },
+    { "name": "release-governance", "spec": "specs/release-governance/spec.md", "prefix": "REL", "range": "REL-001..REL-002", "requirements": 2, "acceptanceCriteria": 6, "operation": "ADDED" }
+  ],
+  "phases": [
+    { "id": "phase-00", "name": "Foundation", "file": "tasks/phase-00-foundation.md", "tasks": 8, "taskRange": "T-001..T-008", "gate": "GATE-0", "businessMilestone": "M1 Delivery capability" },
+    { "id": "phase-01", "name": "Source Alignment", "file": "tasks/phase-01-source-alignment.md", "tasks": 9, "taskRange": "T-009..T-017", "gate": "GATE-1", "businessMilestone": "M2 Source agreement" },
+    { "id": "phase-02", "name": "Core Platform", "file": "tasks/phase-02-core-platform.md", "tasks": 14, "taskRange": "T-018..T-031", "gate": "GATE-2", "businessMilestone": "M3 One record per project" },
+    { "id": "phase-03", "name": "Security & Quality", "file": "tasks/phase-03-security-quality.md", "tasks": 12, "taskRange": "T-032..T-043", "gate": "GATE-3", "businessMilestone": "M4 Trustworthy and protected" },
+    { "id": "phase-04", "name": "Dashboard", "file": "tasks/phase-04-dashboard.md", "tasks": 12, "taskRange": "T-044..T-055", "gate": "GATE-4", "businessMilestone": "M5 Leadership self-service" },
+    { "id": "phase-05", "name": "Governance", "file": "tasks/phase-05-governance.md", "tasks": 11, "taskRange": "T-056..T-066", "gate": "GATE-5", "businessMilestone": "M6 Decisions on the record" },
+    { "id": "phase-06", "name": "Integrations", "file": "tasks/phase-06-integrations.md", "tasks": 14, "taskRange": "T-067..T-080", "gate": "GATE-6", "businessMilestone": "M7 Self-refreshing portfolio" },
+    { "id": "phase-07", "name": "Reporting & Operations", "file": "tasks/phase-07-reporting-operations.md", "tasks": 11, "taskRange": "T-081..T-091", "gate": "GATE-7", "businessMilestone": "M8 Board package from the platform" },
+    { "id": "phase-08", "name": "Verification & Release", "file": "tasks/phase-08-verification-release.md", "tasks": 10, "taskRange": "T-092..T-101", "gate": "GATE-8", "businessMilestone": "M9 Strategy 2035 on the record" }
+  ],
+  "releaseGates": [
+    { "id": "GATE-0", "phase": "phase-00", "approvers": ["PLATFORM", "SECARCH", "SPONSOR"] },
+    { "id": "GATE-1", "phase": "phase-01", "approvers": ["DATAENG", "DATAGOV", "SPONSOR"] },
+    { "id": "GATE-2", "phase": "phase-02", "approvers": ["APPENG", "PORTFOLIO", "SPONSOR"] },
+    { "id": "GATE-3", "phase": "phase-03", "approvers": ["SECARCH", "DATAGOV", "SPONSOR"] },
+    { "id": "GATE-4", "phase": "phase-04", "approvers": ["BILEAD", "A11Y", "SPONSOR"] },
+    { "id": "GATE-5", "phase": "phase-05", "approvers": ["APPENG", "PORTFOLIO", "SPONSOR"] },
+    { "id": "GATE-6", "phase": "phase-06", "approvers": ["DATAENG", "SECARCH", "SPONSOR"] },
+    { "id": "GATE-7", "phase": "phase-07", "approvers": ["BILEAD", "PORTFOLIO", "SPONSOR"] },
+    { "id": "GATE-8", "phase": "phase-08", "approvers": ["QALEAD", "RELMGR", "SPONSOR"] }
+  ],
+  "artifacts": {
+    "proposal": "proposal.md",
+    "design": "design.md",
+    "phaseCrosswalk": "phase-crosswalk.md",
+    "manifest": "manifest.json",
+    "decisions": [
+      "decisions/security-and-identity.md",
+      "decisions/synchronization-ownership.md"
+    ],
+    "contracts": [
+      "contracts/integration-data-contracts.md"
+    ],
+    "registries": [
+      "registries/ownership.md",
+      "registries/release-gates.md",
+      "registries/approval-sequences.md",
+      "registries/source-catalog.md",
+      "registries/dependency-catalog.md",
+      "registries/test-catalog.md",
+      "registries/evidence-catalog.md"
+    ],
+    "specs": [
+      "specs/integrations/spec.md",
+      "specs/security/spec.md",
+      "specs/executive-dashboard/spec.md",
+      "specs/project-registry/spec.md",
+      "specs/kpi-governance/spec.md",
+      "specs/governance-workflow/spec.md",
+      "specs/data-quality/spec.md",
+      "specs/board-reporting/spec.md",
+      "specs/nonfunctional/spec.md",
+      "specs/verification/spec.md",
+      "specs/release-governance/spec.md"
+    ],
+    "tasks": [
+      "tasks/phase-00-foundation.md",
+      "tasks/phase-01-source-alignment.md",
+      "tasks/phase-02-core-platform.md",
+      "tasks/phase-03-security-quality.md",
+      "tasks/phase-04-dashboard.md",
+      "tasks/phase-05-governance.md",
+      "tasks/phase-06-integrations.md",
+      "tasks/phase-07-reporting-operations.md",
+      "tasks/phase-08-verification-release.md"
+    ]
+  },
+  "taskFieldSchema": [
+    "Owner",
+    "Verifier",
+    "Dependencies",
+    "Requirements",
+    "Acceptance Criteria",
+    "Tests",
+    "Evidence",
+    "Release Gates"
+  ],
+  "traceability": {
+    "model": "requirement -> acceptance criterion -> test -> evidence -> release gate",
+    "testIdPattern": "TEST-<REQ-ID>",
+    "evidenceIdPattern": "EV-<REQ-ID>",
+    "criterionIdPattern": "AC-<REQ-ID>-<n>",
+    "everyCriterionCoveredByAtLeastOneTask": true
+  },
+  "syncTarget": {
+    "mainSpecsPath": "openspec/specs/<capability>/spec.md",
+    "synced": false,
+    "note": "Main specs remain placeholders until the sync step; delta specs in this change are authoritative for v1."
+  }
+}

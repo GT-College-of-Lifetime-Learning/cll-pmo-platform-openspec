@@ -1,0 +1,8 @@
+# Change metadata for implement-cll-pmo-platform-v1
+# Schema precedence: CLI flag > this file > openspec/config.yaml > default
+
+schema: spec-driven
+
+# This change ADDS eleven capabilities and removes none.
+# retire_capabilities must stay false: no capability spec may be deleted on archive.
+retire_capabilities: false

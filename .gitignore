@@ -1,0 +1,38 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+TestResults/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+*.nupkg
+coverage.cobertura.xml
+coverage.opencover.xml
+
+# Node / web
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environments and secrets
+.env
+.env.*
+!.env.example
+local.settings.json
+*.pfx
+
+# IDEs and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local artifacts
+*.log
+*.sqlite3
