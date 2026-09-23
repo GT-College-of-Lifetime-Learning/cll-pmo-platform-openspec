@@ -143,27 +143,24 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
       - name: Build
         run: npm run build
 
-      # Serve, wait and scan must share a step: a process backgrounded in one
-      # step does not survive into the next.
-      - name: Serve the build and run axe
-        run: |
-          set -euo pipefail
-          npm run preview -- --host 127.0.0.1 > preview.log 2>&1 &
-          preview_pid=$!
-          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+      # Playwright starts the preview server, waits for the port and tears it
+      # down, so no backgrounded process has to survive between steps.
+      - name: Run axe against the dashboard shell
+        run: npm run test:a11y
 
-          npx --yes wait-on http://127.0.0.1:4173 --timeout 60000
-
-          npx --yes @axe-core/cli http://127.0.0.1:4173 \
-            --tags wcag2a,wcag2aa,wcag21a,wcag21aa,wcag22aa \
-            --exit
-
-      - name: Show preview log on failure
-        if: failure()
-        run: cat preview.log || true
+      - name: Upload accessibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-report
+          path: web/playwright-report/
+          if-no-files-found: ignore
 
   openspec-artifacts:
     name: OpenSpec artifact presence
