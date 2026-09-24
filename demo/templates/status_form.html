@@ -26,7 +26,7 @@ form.status input, form.status textarea, form.status select { width:100%; }
 <div class="flash">
   <span class="badge b-navy">Plan-synced draft</span>
   Percent complete arrives pre-populated at <strong>{{ prefill.percent_complete }}%</strong>
-  from the plan sync — edit anything before confirming; confirmation counts as this period's update.
+  {% if prefill.next_milestone %}; next milestone <strong>{{ prefill.next_milestone }}</strong> ({{ prefill.next_milestone_date|default("") }}){% endif %} from the plan sync — edit anything before confirming; confirmation counts as this period's update.
 </div>
 {% endif %}
 

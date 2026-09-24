@@ -323,7 +323,8 @@ def feed_file(name: str):
 @app.get("/coverage", response_class=HTMLResponse)
 def coverage_page(request: Request):
     """data-sourcing spec: per-need sourced/partial/unsourced, grouped by
-    consumer view, with UNDEFINED needs surfaced for sponsor routing."""
+    consumer view, with UNDEFINED needs surfaced for sponsor routing.
+    Also maps dashboard item dependencies and data flow."""
     con = db()
     needs = [dict(r) for r in con.execute(
         "SELECT * FROM DataNeeds ORDER BY ConsumerView, NeedId").fetchall()]
@@ -349,13 +350,67 @@ def coverage_page(request: Request):
     } for v, rows in by_view.items()}
     undefined = [n for n in needs if n["DefinitionState"].startswith("UNDEFINED")]
 
+    # Build need-to-KPI mapping (data flow: source systems → needs → KPIs)
+    kpis = con.execute("SELECT * FROM KPIs ORDER BY KpiId").fetchall()
+    need_to_kpis = {}
+    for n in needs:
+        need_to_kpis[n["NeedId"]] = []
+    for k in kpis:
+        # KPIs reference needs via Method or notes; check if need name appears in KPI Method
+        for n in needs:
+            if n["NeedTitle"] and n["NeedTitle"] in (k["Method"] or ""):
+                need_to_kpis[n["NeedId"]].append({ "kpi_id": k["KpiId"], "kpi_name": k["KpiName"] })
+    # Also check KpiValues for need references
+    for n in needs:
+        matching_kpis = con.execute(
+            "SELECT DISTINCT kv.KpiValueId FROM KpiValues kv "
+            "WHERE kv.ValueNote LIKE ? COLLATE NOCASE",
+            (f"%{n['NeedId']}%",)).fetchall()
+        if matching_kpis:
+            kpi_ids = con.execute(
+                "SELECT KpiId FROM KPIs WHERE KpiId IN "
+                "(SELECT KpiValueId FROM KpiValues WHERE KpiValueId IN "
+                "(SELECT KpiId FROM KPIs))").fetchall()
+            need_to_kpis[n["NeedId"]].extend([
+                {"kpi_id": kk["KpiId"], "kpi_name": kk["KpiName"]}
+                for kk in kpi_ids if kk["KpiId"] not in [nk["kpi_id"] for nk in need_to_kpis[n["NeedId"]]]
+            ])
+
+    # Build view-to-needs consumption mapping
+    view_to_needs = {}
+    view_blocks = {
+        "Dean Overview": "dean.html",
+        "Governance": "governance.html",
+        "Priority detail": "priority.html",
+        "Readiness": "readiness.html",
+        "Strategy 2035 / Goal 1": "strategy.html",
+        "Strategy 2035 / Goal 2": "strategy.html",
+        "Strategy 2035 / Goal 3": "strategy.html",
+        "Strategy 2035 / Goal 4": "strategy.html",
+        "Strategy 2035 / Goal 5": "strategy.html",
+    }
+    for view_name, template in view_blocks.items():
+        # Parse the template to find needs references
+        # For now, use the view summary data that's already computed
+        view_to_needs[view_name] = []
+        # Check which needs appear in the view's data context
+        for n in needs:
+            if n["ConsumerView"] == view_name or \
+               (view_name in ["Strategy 2035 / Goal 1", "Strategy 2035 / Goal 2",
+                              "Strategy 2035 / Goal 3", "Strategy 2035 / Goal 4",
+                              "Strategy 2035 / Goal 5"] and
+                n["NeedTitle"] and any(g in n["NeedTitle"] for g in ["Goal 1", "Goal 2", "Goal 3", "Goal 4", "Goal 5"])):
+                view_to_needs[view_name].append(n)
+
     return templates.TemplateResponse(request, "coverage.html", {
         "request": request, "role": role(request),
         "by_view": by_view, "view_summary": view_summary,
         "undefined": undefined, "unmatched": unmatched,
         "totals": {"sourced": sum(1 for n in needs if n["coverage"] == "sourced"),
-                   "partial": sum(1 for n in needs if n["coverage"] == "partial"),
-                   "unsourced": sum(1 for n in needs if n["coverage"] == "unsourced")},
+           "partial": sum(1 for n in needs if n["coverage"] == "partial"),
+           "unsourced": sum(1 for n in needs if n["coverage"] == "unsourced")},
+        "need_to_kpis": need_to_kpis,
+        "view_to_needs": view_to_needs,
     })
 
 # ---------- Phase 1 views ----------

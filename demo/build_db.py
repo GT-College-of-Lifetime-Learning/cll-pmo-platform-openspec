@@ -57,7 +57,7 @@ CREATE TABLE IntakeRequests (RequestId TEXT PRIMARY KEY, Title TEXT, Requester T
     EffortEst INT, CostEst INT, ExternalCommitment INT, Tier TEXT,
     ScoreAlignment INT, ScoreValue INT, ScoreUrgency INT, ScoreCapacity INT,
     ScoreEffort INT, ScoreRisk INT, TriageOwner TEXT, Status TEXT, RevisitDate TEXT,
-    DecisionId TEXT, LinkedItemId TEXT, SubmittedDate TEXT);
+    DecisionId TEXT, LinkedItemId TEXT, SubmittedDate TEXT, Confidential INT DEFAULT 0);
 CREATE TABLE Decisions (DecisionId TEXT PRIMARY KEY, DecisionDate TEXT, Body TEXT,
     SubjectId TEXT, Decision TEXT, Rationale TEXT, Conditions TEXT,
     CorrectsDecisionId TEXT, RecordedBy TEXT);

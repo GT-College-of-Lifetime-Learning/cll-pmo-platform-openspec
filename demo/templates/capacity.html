@@ -15,17 +15,25 @@
 <h1>Capacity heatmap</h1>
 <p class="lede">Committed vs available per unit per period — utilization states carry text
 labels, never color alone. Over-allocation is visible, never prevented. Granularity is
-role-level until the Dean decides (Q2).</p>
+role-level until the Dean decides (Q2). <span class="caption">(View: {{ view_name }})</span></p>
 
-{% if over_units %}
-<div class="flash alert" role="alert">
-  <span class="badge b-red">Over-allocated this period</span>
-  {% for u in over_units %}<strong>{{ u['UnitId'] }}</strong>{% if not loop.last %} · {% endif %}{% endfor %}
-  — see the heatmap below; governance sees any cross-unit drivers.
+<div class="row">
+  <div class="col-6">
+    {% if view_name == 'dean' %}
+    <div class="flash alert" role="alert">
+      <span class="badge b-amber">Dean capacity overview</span>
+      {% if over_units %}<strong>Over-allocated units:</strong>{% for u in over_units %} {{ u['UnitId'] }}{% if not loop.last %}·{% endif %}{% endfor }{% endif %}{% if not over_units %}<span class="s-b-green">All units within capacity</span>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-6">
+    <div class="flash alert" role="alert">
+      <span class="badge b-navy">Period: {{ current_period }}</span>
+    </div>
+  </div>
 </div>
-{% endif %}
 
-<section aria-label="Heatmap">
+<section aria-label="Capacity heatmap">
 <div class="tablewrap">
 <table class="heat-table">
   <thead><tr><th style="text-align:left">Unit</th>
@@ -33,18 +41,21 @@ role-level until the Dean decides (Q2).</p>
   <tbody>
   {% for u in units %}
     <tr>
-      <td><a href="/allocate/{{ u['UnitId'] }}?as={{ request.query_params.get('as','executive') }}">{{ u['UnitId'] }}</a>
-          <span class="small muted">{{ u['Name'] }}</span></td>
+      <td>{{ u['UnitId'] }} {{ u.get('Name', '') | capitalize }}</td>
       {% for p in periods %}
         {% set c = grid[(u['UnitId'], p)] %}
         <td class="cell st-{{ c.state | replace(' ', '') }}">
+          {% set pct_display = c.pct | round(0) | int %}
           {% if c.state == 'unallocated' %}
             <span class="pct">—</span><span class="lbl">unallocated</span>
-          {% else %}
-            <span class="pct">{{ c.pct | round(0) | int }}%</span>
-            <span class="lbl">{{ c.state }}</span>
-            <span class="sub">{{ c.committed }} of {{ c.available }} FTE{% if c.stale %} · <em class="stale-mark">stale</em>{% endif %}</span>
+          {% elif c.state == 'allocated' %}
+            <span class="pct">{{ pct_display }}%</span><span class="lbl">allocated</span>
+          {% elif c.state == 'at capacity' %}
+            <span class="pct">{{ pct_display }}%</span><span class="lbl">at capacity</span>
+          {% elif c.state == 'over-allocated' %}
+            <span class="pct">{{ pct_display }}%</span><span class="lbl">over-allocated</span>
           {% endif %}
+          <span class="sub">{{ c.committed }} of {{ c.available }} FTE{% if c.stale %} · <em class="stale-mark">stale</em>{% endif %}</span>
         </td>
       {% endfor %}
     </tr>
@@ -54,19 +65,26 @@ role-level until the Dean decides (Q2).</p>
 </div>
 </section>
 
-{% if cross %}
 <section aria-label="Cross-unit over-allocations">
 <h2>Over-allocated with cross-unit drivers (governance attention)</h2>
-{% for c in cross %}
-<div class="flash alert">
-  <strong>{{ c.unit }}</strong> — committed {{ c.committed }} of {{ c.available }} FTE.
-  {% for d in c.driving[:4] %}
-    <span class="badge b-red">{{ d.ItemId }} {{ d.Percent | round(0) | int }}%</span>
-  {% endfor %}
-  {% if c.cross_unit %}<br><span class="small">cross-unit items driving this:
-    {% for x in c.cross_unit %}{{ x.ItemId }}{% if not loop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Unit</th><th>Committed</th><th>Available</th><th>Drivers (top 4)</th></tr></thead>
+  <tbody>
+  {% for c in cross %}
+    <tr>
+      <td>{{ c.unit }}</td>
+      <td>{{ c.committed | round(2) }} FTE</td>
+      <td>{{ c.available | round(2) }} FTE</td>
+      <td>
+        {% for d in c.driving[:4] %}
+          <span class="badge b-red">{{ d.ItemId }} {{ d.Percent | round(0) | int }}%</span>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+        {% if c.cross_unit %}<br><span class="small">cross-unit items:</span>
+          {% for x in c.cross_unit %}{{ x.ItemId }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
 </div>
-{% endfor %}
-</section>
 {% endif %}
 {% endblock %}

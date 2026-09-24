@@ -94,6 +94,24 @@ def business_days_between(con, start, end):
         (start.isoformat(), end.isoformat())).fetchone()
     return row[0]
 
+def recompute_confidential_counts(con):
+    """D13 snapshot maintenance (P1 2.9): the ConfidentialCounts table is rebuilt
+    from the WorkItems Confidential flag whenever a flow changes the underlying
+    facts (approval, stage change, status RAG)."""
+    con.execute("DELETE FROM ConfidentialCounts")
+    rows = con.execute(
+        "SELECT ItemId, PrimaryPriorityId, LeadUnitId, Tier, Stage FROM WorkItems"
+        " WHERE Confidential=1").fetchall()
+    for r in rows:
+        last = con.execute(
+            "SELECT OverallRAG FROM StatusUpdates WHERE ItemId=? ORDER BY PeriodEnd DESC LIMIT 1",
+            (r["ItemId"],)).fetchone()
+        rag = last["OverallRAG"] if last else "Green"
+        con.execute("INSERT INTO ConfidentialCounts VALUES (?,?,?,?,?,?,1)",
+                    (r["PrimaryPriorityId"], r["LeadUnitId"], r["Tier"], r["Stage"], rag,
+                     "2026-09-15"))
+
+
 def register_flow_routes(app: FastAPI):
 
     # ---------- F1: intake (design D14) ----------
@@ -280,8 +298,11 @@ def register_flow_routes(app: FastAPI):
             import demo.sync_engine as sync_engine
             plan = sync_engine.load_plan(item_id)
             if plan:
+                ms = plan.get("milestones", [])
                 prefill = {"percent_complete": plan.get("percent_complete"),
-                           "source": "plan sync (one-way)"}
+                           "source": "plan sync (one-way)",
+                           "next_milestone": ms[0]["title"] if ms else None,
+                           "next_milestone_date": ms[0]["forecast"] if ms else None}
         con.close()
         if item is None:
             return HTMLResponse("<h3>Item not found</h3>", status_code=404)
