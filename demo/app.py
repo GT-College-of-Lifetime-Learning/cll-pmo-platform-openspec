@@ -25,6 +25,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+from demo.sync_engine import FixturePlanDataSource  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 DB = Path(__file__).resolve().parent / "cll_spm.db"
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent / "templates"))
@@ -603,8 +605,8 @@ def item_detail(request: Request, item_id: str):
     # Phase 2: draft flow - synced item's period update arrives pre-populated (task 2.2)
     draft = None
     if sync_ctx.get("sync_enabled"):
-        from demo.sync_engine import load_plan
-        plan = load_plan(item_id)
+        ds = FixturePlanDataSource()
+        plan = ds.load_plan(item_id)
         if plan:
             draft = {"percent_complete": plan.get("percent_complete"),
                      "source": "plan sync (last %s)" % sync_ctx.get("last_sync"),

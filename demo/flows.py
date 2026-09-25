@@ -296,7 +296,8 @@ def register_flow_routes(app: FastAPI):
         prefill = None
         if item is not None and item["SyncEnabled"]:
             import demo.sync_engine as sync_engine
-            plan = sync_engine.load_plan(item_id)
+            ds = sync_engine.FixturePlanDataSource()
+            plan = ds.load_plan(item_id)
             if plan:
                 ms = plan.get("milestones", [])
                 prefill = {"percent_complete": plan.get("percent_complete"),
